@@ -1,4 +1,4 @@
-package com.weather.mapper;
+package com.weather.mapper.MySQL.station;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.weather.entity.Station;

@@ -3,21 +3,21 @@ package com.weather.utils;
 import lombok.Data;
 
 @Data
-public class Result {
+public class StationResult implements Result{
     private int success;
     private Object station;
 
-    public static Result success(Object station){
-        Result result = new Result();
-        result.setSuccess(ResultCode.SUCCESS);
-        result.setStation(station);
-        return result;
+    public static StationResult success(Object station){
+        StationResult stationResult = new StationResult();
+        stationResult.setSuccess(ResultCode.SUCCESS);
+        stationResult.setStation(station);
+        return stationResult;
     }
 
-    public static Result fail(){
-        Result result = new Result();
-        result.setSuccess(ResultCode.FAIL);
-        return result;
+    public static StationResult fail(){
+        StationResult stationResult = new StationResult();
+        stationResult.setSuccess(ResultCode.FAIL);
+        return stationResult;
     }
 
 }

@@ -1,2 +1,5 @@
-package com.weather.utils;public interface Result {
+package com.weather.utils;
+
+public interface Result {
+
 }

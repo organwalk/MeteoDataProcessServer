@@ -1,0 +1,26 @@
+server:
+  port: 9094
+
+spring:
+  application:
+    name: gateway-service
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/qx/login,/qx/logout
+        - id: dataquery-service
+          uri: lb://dataquery-service
+          predicates:
+            - Path=/qx/stations,/qx/stat_hour,/qx/stat_day,/qx/stat_day_range
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8888/eureka/
