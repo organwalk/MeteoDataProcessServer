@@ -33,4 +33,11 @@ public class MeteorologyController {
                                                  @RequestParam String which){
         return meteorologyService.getMeteorologyByDate(station,start_date,end_date,which);
     }
+    @PostMapping("/correlation")
+    public MeteorologyResult corrcoefDate(@RequestParam String station,
+                                                 @RequestParam String start_date,
+                                                 @RequestParam String end_date,
+                                                 @RequestParam String which){
+        return meteorologyService.corrcoefDate(station,start_date,end_date,which);
+    }
 }

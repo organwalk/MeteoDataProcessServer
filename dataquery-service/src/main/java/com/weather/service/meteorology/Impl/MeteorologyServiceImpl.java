@@ -8,6 +8,11 @@ import com.weather.utils.MeteorologyResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -186,6 +191,14 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                 String endDateTime = end_date+" "+"08:00:00";
                 List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDate(dataSource, startDateTime, endDateTime,which);
                 SQLResults = SQLResult(meteorologyList);
+            }else {
+                //如果查询日期不处于同一年
+                String dataSourceStartDate = station + "_weather_" + start_date.split("-")[0];
+                String dataSourceEndDate = station + "_weather_" + end_date.split("-")[0];
+                String startDateTime = start_date+" "+"08:00:00";
+                String endDateTime = end_date+" "+"08:00:00";
+                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDateInOtherYear(dataSourceStartDate, dataSourceEndDate,startDateTime, endDateTime,which);
+                SQLResults = SQLResult(meteorologyList);
             }
 
         }
@@ -201,6 +214,52 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         else {
             // 返回失败结果
             return MeteorologyResult.fail();
+        }
+    }
+
+    @Override
+    public MeteorologyResult corrcoefDate(String station, String start_date, String end_date, String which) {
+        //System.out.println("正在执行相关系数矩阵计算脚本");
+        String scriptPath = "C:\\Users\\haruki\\IdeaProjects\\article\\qx-analysis\\dataquery-service\\src\\main\\resources\\python\\corrcoef.py";
+        String[] whichArray = which.split(",");
+        List<Integer> correlation = new ArrayList<>();
+        for (String s : whichArray) {
+            correlation.add(Integer.parseInt(s.trim()));
+        }
+        ProcessBuilder processBuilder = new ProcessBuilder("python", scriptPath, station, start_date, end_date, correlation.toString().replaceAll("[\\[\\]\\s]", ""));
+        //processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT); // 将Python进程的标准输出流重定向到Java进程的标准输出流
+        try {
+            Process process = processBuilder.start();
+            // 等待Python进程执行完毕
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                // 如果Python进程执行出错，将错误信息打印到Java控制台
+                InputStream errorStream = process.getErrorStream();
+                byte[] errorBytes = errorStream.readAllBytes();
+                String errorMsg = new String(errorBytes, StandardCharsets.UTF_8);
+                System.err.println("Python script failed with error message: " + errorMsg);
+                throw new RuntimeException("Python script failed with exit code " + exitCode);
+            }else if (exitCode == 0){
+                // 读取Python脚本输出的数据
+                BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), "utf-8"));//获取字符输入流对象
+                String line = null;
+                StringBuilder sbrs = new StringBuilder();
+                //记录输出结果
+                while ((line = in.readLine()) != null) {
+                    sbrs.append(line);
+                }
+                // 将Python脚本输出的数据传入MeteorologyResult.success方法中
+                System.out.println("...............");
+                System.out.println(sbrs);
+                return MeteorologyResult.success(station, sbrs);
+            }else {
+                return MeteorologyResult.fail();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 
