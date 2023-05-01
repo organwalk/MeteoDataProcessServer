@@ -8,8 +8,8 @@ public class Meteorology extends Model<Meteorology> {
     private int id;//不出现在查询结果中
     private String station;//不出现在查询结果中
     private String date;//不出现在查询结果中
-    private String dateTime;//不出现在查询结果中
-    private String time;
+    private String datetime;
+    private String time;//不出现在查询结果中
     private String temperature;
     private String humidity;
     private String speed;
@@ -43,12 +43,12 @@ public class Meteorology extends Model<Meteorology> {
         this.date = date;
     }
 
-    public String getDateTime() {
-        return dateTime;
+    public String getDatetime() {
+        return datetime;
     }
 
-    public void setDateTime(String dateTime) {
-        this.dateTime = dateTime;
+    public void setDatetime(String datetime) {
+        this.datetime = datetime;
     }
 
     public String getTime() {
@@ -127,7 +127,7 @@ public class Meteorology extends Model<Meteorology> {
     @Override
     public String toString() {
         return "[" +
-                "\"" + time + "\"," +
+                "\"" + datetime + "\"," +
                 "\"" + temperature + "\"," +
                 "\"" + humidity + "\"," +
                 "\"" + speed + "\"," +

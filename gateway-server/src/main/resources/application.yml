@@ -19,7 +19,7 @@ spring:
         - id: dataquery-service
           uri: lb://dataquery-service
           predicates:
-            - Path=/qx/stations,/qx/stat_hour,/qx/stat_day,/qx/stat_day_range,/qx/correlation
+            - Path=/qx/stations,/qx/stat_hour,/qx/stat_day,/qx/stat_day_range,/qx/correlation,/qx/query
 eureka:
   client:
     serviceUrl:

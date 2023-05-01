@@ -8,11 +8,8 @@ import com.weather.utils.MeteorologyResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,7 +23,7 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     @Autowired
     MeteorologyMySQLMapper meteorologyMySQLMapper;
 
-
+    //4.6 获取任一小时的分钟气象信息
     @Override
     public MeteorologyResult getMeteorologyByHour(String station, String date, String hour, String which) {
         //用于存储Redis数据获取结果
@@ -43,7 +40,7 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             // 获取符合对应时间条件的数据
             redisResults = meteorologyMapper.getMeteorologyDataByTime(station + "_data_" + date, startTimestamp, endTimestamp);
             // 获取该小时内60分钟共60个数组
-            if (redisResults!=null){
+            if (redisResults != null) {
                 //System.out.println("查询redis数据");
                 for (String[] data : redisResults) {
                     // 判断该数据是否是整点数据（以":00"结尾,即分钟）
@@ -66,12 +63,12 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             }
         }
         //若redis中没有数据，则从MySQL中获取
-        if (redisResults==null){
+        if (redisResults == null) {
             //System.out.println("查询MySQL");
             String dataSource = station + "_weather_" + date.split("-")[0];
-            String startDateTime = date+" "+hour+":00:00";
-            String endDateTime = date+" "+hour+":59:00";
-            List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyHour(dataSource, startDateTime, endDateTime,which);
+            String startDateTime = date + " " + hour + ":00:00";
+            String endDateTime = date + " " + hour + ":59:00";
+            List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyHour(dataSource, startDateTime, endDateTime, which);
             SQLResults = SQLResult(meteorologyList);
         }
         // 检查redis数据获取是否有结果
@@ -80,15 +77,15 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             return MeteorologyResult.success(station, whichResults);
         }
         // 检查MySQL数据获取是否有结果
-        else if (!SQLResults.isEmpty()){
-            return MeteorologyResult.success(station,SQLResults);
-        }
-        else {
+        else if (!SQLResults.isEmpty()) {
+            return MeteorologyResult.success(station, SQLResults);
+        } else {
             // 返回失败结果
             return MeteorologyResult.fail();
         }
     }
 
+    //4.7 获取任一天的小时气象信息
     @Override
     public MeteorologyResult getMeteorologyByDay(String station, String date, String which) {
         //用于存储Redis数据获取结果
@@ -102,7 +99,7 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         long endTimestamp = LocalDateTime.of(LocalDate.parse(date), LocalTime.of(23, 00, 00)).toEpochSecond(ZoneOffset.ofHours(8));
         // 获取符合对应时间条件的数据
         redisResults = meteorologyMapper.getMeteorologyDataByTime(station + "_data_" + date, startTimestamp, endTimestamp);
-        if (redisResults!=null){
+        if (redisResults != null) {
             //System.out.println("查询redis数据");
             // 获取任一天的小时数据
             for (String[] data : redisResults) {
@@ -125,12 +122,12 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             }
         }
         //若redis中没有数据，则从MySQL中获取
-        if (redisResults==null){
+        if (redisResults == null) {
             //System.out.println("查询MySQL");
             String dataSource = station + "_weather_" + date.split("-")[0];
-            String startDateTime = date+" "+"00:00:00";
-            String endDateTime = date+" "+"23:00:00";
-            List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDay(dataSource, startDateTime, endDateTime,which);
+            String startDateTime = date + " " + "00:00:00";
+            String endDateTime = date + " " + "23:00:00";
+            List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDay(dataSource, startDateTime, endDateTime, which);
             SQLResults = SQLResult(meteorologyList);
         }
         // 检查redis数据获取是否有结果
@@ -139,17 +136,17 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             return MeteorologyResult.success(station, whichResults);
         }
         // 检查MySQL数据获取是否有结果
-        else if (!SQLResults.isEmpty()){
-            return MeteorologyResult.success(station,SQLResults);
-        }
-        else {
+        else if (!SQLResults.isEmpty()) {
+            return MeteorologyResult.success(station, SQLResults);
+        } else {
             // 返回失败结果
             return MeteorologyResult.fail();
         }
     }
 
+    //4.8 获取任意时间段以天为单位的气象数据
     @Override
-    public MeteorologyResult getMeteorologyByDate(String station, String start_date, String end_date,String which) {
+    public MeteorologyResult getMeteorologyByDate(String station, String start_date, String end_date, String which) {
         //用于存储Redis数据获取结果
         List<String[]> redisResults = null;
         //用于存储MySQL数据获取结果
@@ -160,8 +157,8 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         long startTimestamp = LocalDateTime.of(LocalDate.parse(start_date), LocalTime.MIN).toEpochSecond(ZoneOffset.ofHours(8));
         long endTimestamp = LocalDateTime.of(LocalDate.parse(end_date), LocalTime.MAX).toEpochSecond(ZoneOffset.ofHours(8));
         // 获取符合对应时间条件的数据
-        redisResults = meteorologyMapper.getMeteorologyDataByDate(station,startTimestamp,endTimestamp,start_date,end_date);
-        if (!redisResults.isEmpty()){
+        redisResults = meteorologyMapper.getMeteorologyDataByDate(station, startTimestamp, endTimestamp, start_date, end_date);
+        if (!redisResults.isEmpty()) {
             //System.out.println("查询redis数据");
             for (String[] data : redisResults) {
                 // 取8点的数据作为一天气象数据的基准
@@ -181,23 +178,23 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                     whichResults.add(selectedValues);
                 }
             }
-        }else{
+        } else {
             //若redis中没有数据，则从MySQL中获取
             //System.out.println("查询MySQL");
             //如果查询日期处于同一年
-            if (start_date.split("-")[0].equals(end_date.split("-")[0])){
+            if (start_date.split("-")[0].equals(end_date.split("-")[0])) {
                 String dataSource = station + "_weather_" + start_date.split("-")[0];
-                String startDateTime = start_date+" "+"08:00:00";
-                String endDateTime = end_date+" "+"08:00:00";
-                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDate(dataSource, startDateTime, endDateTime,which);
+                String startDateTime = start_date + " " + "08:00:00";
+                String endDateTime = end_date + " " + "08:00:00";
+                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDate(dataSource, startDateTime, endDateTime, which);
                 SQLResults = SQLResult(meteorologyList);
-            }else {
+            } else {
                 //如果查询日期不处于同一年
                 String dataSourceStartDate = station + "_weather_" + start_date.split("-")[0];
                 String dataSourceEndDate = station + "_weather_" + end_date.split("-")[0];
-                String startDateTime = start_date+" "+"08:00:00";
-                String endDateTime = end_date+" "+"08:00:00";
-                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDateInOtherYear(dataSourceStartDate, dataSourceEndDate,startDateTime, endDateTime,which);
+                String startDateTime = start_date + " " + "08:00:00";
+                String endDateTime = end_date + " " + "08:00:00";
+                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDateInOtherYear(dataSourceStartDate, dataSourceEndDate, startDateTime, endDateTime, which);
                 SQLResults = SQLResult(meteorologyList);
             }
 
@@ -208,91 +205,152 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             return MeteorologyResult.success(station, whichResults);
         }
         // 检查MySQL数据获取是否有结果
-        else if (!SQLResults.isEmpty()){
-            return MeteorologyResult.success(station,SQLResults);
-        }
-        else {
+        else if (!SQLResults.isEmpty()) {
+            return MeteorologyResult.success(station, SQLResults);
+        } else {
             // 返回失败结果
             return MeteorologyResult.fail();
         }
     }
 
+    //4.9 计算任一时间段内气象数据的协相关矩阵
     @Override
-    public MeteorologyResult corrcoefDate(String station, String start_date, String end_date, String which) {
+    public MeteorologyResult corrcoefDate(String station, String start_date, String end_date, String correlation) {
         //System.out.println("正在执行相关系数矩阵计算脚本");
-        String scriptPath = "C:\\Users\\haruki\\IdeaProjects\\article\\qx-analysis\\dataquery-service\\src\\main\\resources\\python\\corrcoef.py";
-        String[] whichArray = which.split(",");
-        List<Integer> correlation = new ArrayList<>();
+        String[] whichArray = correlation.split(",");
+        List<Integer> correlationList = new ArrayList<>();
         for (String s : whichArray) {
-            correlation.add(Integer.parseInt(s.trim()));
+            correlationList.add(Integer.parseInt(s.trim()));
         }
-        ProcessBuilder processBuilder = new ProcessBuilder("python", scriptPath, station, start_date, end_date, correlation.toString().replaceAll("[\\[\\]\\s]", ""));
-        //processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT); // 将Python进程的标准输出流重定向到Java进程的标准输出流
+
+        List<String> corrcoefCommand = new ArrayList<>();
+        //python解释器
+        corrcoefCommand.add("C:\\Users\\haruki\\AppData\\Local\\Programs\\Python\\Python310\\python.exe");
+        //python脚本
+        corrcoefCommand.add("C:\\Users\\haruki\\IdeaProjects\\article\\qx-analysis\\dataquery-service\\src\\main\\resources\\python\\corrcoef.py");
+        corrcoefCommand.add(station);
+        corrcoefCommand.add(start_date);
+        corrcoefCommand.add(end_date);
+        corrcoefCommand.add(correlation);
+
+        // Start Python subprocess
+        ProcessBuilder builder = new ProcessBuilder(corrcoefCommand);
+        Process process = null;
         try {
-            Process process = processBuilder.start();
-            // 等待Python进程执行完毕
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                // 如果Python进程执行出错，将错误信息打印到Java控制台
-                InputStream errorStream = process.getErrorStream();
-                byte[] errorBytes = errorStream.readAllBytes();
-                String errorMsg = new String(errorBytes, StandardCharsets.UTF_8);
-                System.err.println("Python script failed with error message: " + errorMsg);
-                throw new RuntimeException("Python script failed with exit code " + exitCode);
-            }else if (exitCode == 0){
-                // 读取Python脚本输出的数据
-                BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), "utf-8"));//获取字符输入流对象
-                String line = null;
-                StringBuilder sbrs = new StringBuilder();
-                //记录输出结果
-                while ((line = in.readLine()) != null) {
-                    sbrs.append(line);
-                }
-                // 将Python脚本输出的数据传入MeteorologyResult.success方法中
-                System.out.println("...............");
-                System.out.println(sbrs);
-                return MeteorologyResult.success(station, sbrs);
-            }else {
-                return MeteorologyResult.fail();
-            }
+            process = builder.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        }
+
+        // Read output from Python subprocess
+        try (InputStream inputStream = process.getInputStream()) {
+            StringBuilder strCorrcoefResult = new StringBuilder();
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                strCorrcoefResult.append(new String(buffer, 0, length));
+            }
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                // 字符串处理
+                String[] lists = strCorrcoefResult.substring(2, strCorrcoefResult.length() - 4).split("\\], \\[");
+                // 将字符串型嵌套列表转换为实际嵌套列表
+                List<List<String>> corrcoefNestedLists = new ArrayList<>();
+                for (String list : lists) {
+                    List<String> nestedList = new ArrayList<>();
+                    String[] items = list.split(", ");
+                    for (String item : items) {
+                        nestedList.add(item);
+                    }
+                    corrcoefNestedLists.add(nestedList);
+                }
+                //System.out.println(corrcoefNestedLists);
+                return MeteorologyResult.success(station, corrcoefNestedLists);
+            } else {
+                //System.err.println("Python subprocess exited with error code: " + exitCode);
+                return MeteorologyResult.fail();
+            }
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
+    //4.5 获取指定复杂查询条件的气象数据
+    @Override
+    public MeteorologyResult getComplexMeteorology(String station,
+                                                   String start_date,
+                                                   String end_date,
+                                                   String start_temperature,
+                                                   String end_temperature,
+                                                   String start_humidity,
+                                                   String end_humidity,
+                                                   String start_speed,
+                                                   String end_speed,
+                                                   String start_direction,
+                                                   String end_direction,
+                                                   String start_rain,
+                                                   String end_rain,
+                                                   String start_sunlight,
+                                                   String end_sunlight,
+                                                   String start_pm25,
+                                                   String end_pm25,
+                                                   String start_pm10,
+                                                   String end_pm10) {
+        //用于存储MySQL数据获取结果
+        List<List<String>> SQLResults = new ArrayList<>();
+        //符合条件检索的结果
+        List<List<String>> whichResults = new ArrayList<>();
+        //System.out.println("查询MySQL");
+        //如果查询日期处于同一年
+        if (start_date.split("-")[0].equals(end_date.split("-")[0])) {
+            String dataSource = station + "_weather_" + start_date.split("-")[0];
+            List<Meteorology> meteorologyList = meteorologyMySQLMapper
+                    .selectMeteorologyComplex(dataSource,station, start_date,end_date,
+                            start_temperature,end_temperature, start_humidity,end_humidity,
+                            start_speed,end_speed,start_direction,end_direction,
+                            start_rain,end_rain,start_sunlight,end_sunlight,
+                            start_pm25,end_pm25,start_pm10,end_pm10);
+            SQLResults = SQLResult(meteorologyList);
+        }
+        if (!SQLResults.isEmpty()) {
+            return MeteorologyResult.success(station, SQLResults);
+        } else {
+            return MeteorologyResult.fail();
+        }
+
+    }
+
+    //统一MySQL查询结果
     private List<List<String>> SQLResult(List<Meteorology> meteorologyList) {
         List<List<String>> mysqlResults = new ArrayList<>();
         for (int i = 0; i < meteorologyList.size(); i++) {
             List<String> meteorologyArray = new ArrayList<>();
             Meteorology meteorology = meteorologyList.get(i);
-            if (meteorology.getTime()!=null){
-                meteorologyArray.add(meteorology.getTime());
+            if (meteorology.getDatetime() != null) {
+                meteorologyArray.add(meteorology.getDatetime());
             }
-            if (meteorology.getTemperature()!=null){
+            if (meteorology.getTemperature() != null) {
                 meteorologyArray.add(meteorology.getTemperature());
             }
-            if (meteorology.getHumidity()!=null){
+            if (meteorology.getHumidity() != null) {
                 meteorologyArray.add(meteorology.getHumidity());
             }
-            if (meteorology.getSpeed()!=null){
+            if (meteorology.getSpeed() != null) {
                 meteorologyArray.add(meteorology.getSpeed());
             }
-            if (meteorology.getDirection()!= null){
+            if (meteorology.getDirection() != null) {
                 meteorologyArray.add(meteorology.getDirection());
             }
-            if (meteorology.getRain()!=null){
+            if (meteorology.getRain() != null) {
                 meteorologyArray.add(meteorology.getRain());
             }
-            if (meteorology.getSunlight()!=null){
+            if (meteorology.getSunlight() != null) {
                 meteorologyArray.add(meteorology.getSunlight());
             }
-            if (meteorology.getPm25()!=null){
+            if (meteorology.getPm25() != null) {
                 meteorologyArray.add(meteorology.getPm25());
             }
-            if (meteorology.getPm10()!=null){
+            if (meteorology.getPm10() != null) {
                 meteorologyArray.add(meteorology.getPm10());
             }
             mysqlResults.add(meteorologyArray);

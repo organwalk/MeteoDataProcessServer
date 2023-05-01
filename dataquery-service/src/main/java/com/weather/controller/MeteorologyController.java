@@ -37,7 +37,47 @@ public class MeteorologyController {
     public MeteorologyResult corrcoefDate(@RequestParam String station,
                                                  @RequestParam String start_date,
                                                  @RequestParam String end_date,
-                                                 @RequestParam String which){
-        return meteorologyService.corrcoefDate(station,start_date,end_date,which);
+                                                 @RequestParam String correlation){
+        return meteorologyService.corrcoefDate(station,start_date,end_date,correlation);
+    }
+    @PostMapping("/query")
+    public MeteorologyResult getComplexMeteorology(@RequestParam String station,
+                                                   @RequestParam String start_date,
+                                                   @RequestParam String end_date,
+                                                   @RequestParam(required = false) String start_temperature,
+                                                   @RequestParam(required = false) String end_temperature,
+                                                   @RequestParam(required = false) String start_humidity,
+                                                   @RequestParam(required = false) String end_humidity,
+                                                   @RequestParam(required = false) String start_speed,
+                                                   @RequestParam(required = false) String end_speed,
+                                                   @RequestParam(required = false) String start_direction,
+                                                   @RequestParam(required = false) String end_direction,
+                                                   @RequestParam(required = false) String start_rain,
+                                                   @RequestParam(required = false) String end_rain,
+                                                   @RequestParam(required = false) String start_sunlight,
+                                                   @RequestParam(required = false) String end_sunlight,
+                                                   @RequestParam(required = false) String start_pm25,
+                                                   @RequestParam(required = false) String end_pm25,
+                                                   @RequestParam(required = false) String start_pm10,
+                                                   @RequestParam(required = false) String end_pm10){
+        return meteorologyService.getComplexMeteorology(station,
+                                                        start_date,
+                                                        end_date,
+                                                        start_temperature,
+                                                        end_temperature,
+                                                        start_humidity,
+                                                        end_humidity,
+                                                        start_speed,
+                                                        end_speed,
+                                                        start_direction,
+                                                        end_direction,
+                                                        start_rain,
+                                                        end_rain,
+                                                        start_sunlight,
+                                                        end_sunlight,
+                                                        start_pm25,
+                                                        end_pm25,
+                                                        start_pm10,
+                                                        end_pm10);
     }
 }

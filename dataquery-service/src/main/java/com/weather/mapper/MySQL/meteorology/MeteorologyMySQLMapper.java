@@ -12,7 +12,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
     //转义：&gt;为 >  &lt;为 <
 
     @Select("<script>" +
-            "SELECT time" +
+            "SELECT datetime" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
@@ -28,7 +28,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
     @Results( id = "SQLResults",
             value =
             {
-                @Result(column = "time",property = "time"),
+                @Result(column = "datetime",property = "datetime"),
                 @Result(column = "humidity",property = "humidity"),
                 @Result(column = "speed",property = "speed"),
                 @Result(column = "direction",property = "direction"),
@@ -64,7 +64,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
                                            @Param("which") String which);
 
     @Select("<script>" +
-            "SELECT time" +
+            "SELECT datetime" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
@@ -86,7 +86,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
                                            @Param("which") String which);
 
     @Select("<script>" +
-            "SELECT time" +
+            "SELECT datetime" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
@@ -122,4 +122,51 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
                                             @Param("startDateTime") String startDateTime,
                                             @Param("endDateTime") String endDateTime,
                                             @Param("which") String which);
+
+    @Select("<script>" +
+            "SELECT datetime, temperature, humidity, speed, direction, rain, sunlight, pm25, pm10 " +
+            "FROM ${datasource} " +
+            "WHERE station = '${station}' " +
+            "AND DATE_FORMAT(date, '%Y-%m-%d') &gt;= '${startDate}' " +
+            "<if test=\"endDate != null\">AND DATE_FORMAT(date, '%Y-%m-%d') &lt;= '${endDate}' </if>" +
+            "<if test=\"startTemperature != null\">AND temperature &gt;= '${startTemperature}' </if>" +
+            "<if test=\"endTemperature != null\">AND temperature &lt;= '${endTemperature}' </if>" +
+            "<if test=\"startHumidity != null\">AND humidity &gt;= '${startHumidity}' </if>" +
+            "<if test=\"endHumidity != null\">AND humidity &lt;= '${endHumidity}' </if>" +
+            "<if test=\"startSpeed != null\">AND speed &gt;= '${startSpeed}' </if>" +
+            "<if test=\"endSpeed != null\">AND speed &lt;= '${endSpeed}' </if>" +
+            "<if test=\"startDirection != null\">AND direction &gt;= '${startDirection}' </if>" +
+            "<if test=\"endDirection != null\">AND direction &lt;= '${endDirection}' </if>" +
+            "<if test=\"startRain != null\">AND rain &gt;= '${startRain}' </if>" +
+            "<if test=\"endRain != null\">AND rain &lt;= '${endRain}' </if>" +
+            "<if test=\"startSunlight != null\">AND sunlight &gt;= '${startSunlight}' </if>" +
+            "<if test=\"endSunlight != null\">AND sunlight &lt;= '${endSunlight}' </if>" +
+            "<if test=\"startPm25 != null\">AND pm25 &gt;= '${startPm25}' </if>" +
+            "<if test=\"endPm25 != null\">AND pm25 &lt;= '${endPm25}' </if>" +
+            "<if test=\"startPm10 != null\">AND pm10 &gt;= '${startPm10}' </if>" +
+            "<if test=\"endPm10 != null\">AND pm10 &lt;= '${endPm10}' </if>" +
+            "</script>")
+    @ResultMap(value = "SQLResults")
+    List<Meteorology> selectMeteorologyComplex(
+            @Param("datasource") String datasource,
+            @Param("station") String station,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("startTemperature") String startTemperature,
+            @Param("endTemperature") String endTemperature,
+            @Param("startHumidity") String startHumidity,
+            @Param("endHumidity") String endHumidity,
+            @Param("startSpeed") String startSpeed,
+            @Param("endSpeed") String endSpeed,
+            @Param("startDirection") String startDirection,
+            @Param("endDirection") String endDirection,
+            @Param("startRain") String startRain,
+            @Param("endRain") String endRain,
+            @Param("startSunlight") String startSunlight,
+            @Param("endSunlight") String endSunlight,
+            @Param("startPm25") String startPm25,
+            @Param("endPm25") String endPm25,
+            @Param("startPm10") String startPm10,
+            @Param("endPm10") String endPm10
+    );
 }
