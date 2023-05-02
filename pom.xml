@@ -15,9 +15,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>user-service</module>
-        <module>eureka-server</module>
         <module>dataquery-service</module>
-        <module>gateway-server</module>
+        <module>dataacquisition-service</module>
     </modules>
 
     <properties>

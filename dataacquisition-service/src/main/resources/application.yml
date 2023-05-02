@@ -1,0 +1,11 @@
+udp:
+  remote:
+    host: 127.0.0.1
+    port: 9092
+spring:
+  data:
+    redis:
+      database: 15
+      host: 81.71.161.47
+      port: 6379
+      password: 123456

@@ -12,7 +12,3 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8888/eureka
