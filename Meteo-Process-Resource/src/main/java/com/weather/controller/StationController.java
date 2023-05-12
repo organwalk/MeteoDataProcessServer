@@ -20,8 +20,10 @@ public class StationController {
     @GetMapping("/stations")
     public Result getStationInfo(@RequestParam(name = "station", required = false) String station){
         if (station == null){
+            System.out.println(station);
             return stationService.getStationInfo();
         }else {
+            System.out.println(station);
             return stationDateService.getStationDateByStationId(station);
         }
 

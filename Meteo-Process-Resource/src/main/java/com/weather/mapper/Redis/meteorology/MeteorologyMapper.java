@@ -1,7 +1,6 @@
 package com.weather.mapper.Redis.meteorology;
 
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository
