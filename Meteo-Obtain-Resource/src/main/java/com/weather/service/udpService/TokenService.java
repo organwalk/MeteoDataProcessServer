@@ -7,7 +7,6 @@ import com.weather.entity.request.VoidToken;
 import com.weather.mapper.TokenMapper;
 import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

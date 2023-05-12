@@ -2,7 +2,7 @@ package com.weather.mapper.Redis.meteorology.Impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.mapper.Redis.meteorology.MeteorologyMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
@@ -18,9 +18,10 @@ import java.util.Set;
 
 
 @Repository
+@AllArgsConstructor
 public class MeteorologyMapperImpl implements MeteorologyMapper {
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     // 创建 ObjectMapper 实例，用于序列化和反序列化 JSON
     ObjectMapper objectMapper = new ObjectMapper();

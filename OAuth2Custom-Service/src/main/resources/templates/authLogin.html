@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://www.w3schools.cn/w3css/4/w3.css">
+    <style>
+        .row {
+            height: calc(100vh / 6); /* 计算每行高度 */
+        }
+    </style>
+</head>
+
+<body>
+<div class="row"></div>
+<div class="w3-row">
+    <div class="w3-col" style="width:20%">&nbsp;</div>
+    <div class="w3-col" style="width:60%">
+        <div class="w3-card-4" style="background-color:white;width: 50%;margin: auto;padding-top:10px;padding-bottom:70px;border-radius: 15px;">
+            <div style="background-color: #333333;width: 30%;height: 5px;border-radius:20px;margin: auto"></div>
+            <header class="w3-container" style="text-align: center;margin-top: 60px;">
+                <h3 style="font-weight: bolder">Authentication</h3>
+            </header>
+            <div class="w3-container" style="margin-top: 10px;">
+                <form th:action="@{/login}" method="post">
+                    <div>
+                        <input class="w3-input w3-border w3-round-xxlarge"
+                               type="text"
+                               placeholder="Username"
+                               id="username" name="username"
+                               style="width: 50%;margin: auto;padding-left: 20px"
+                        ><br/>
+                    </div>
+                    <div>
+                        <input class="w3-input w3-border w3-round-xxlarge"
+                               type="password"
+                               placeholder="Password"
+                               id="password" name="password"
+                               style="width: 50%;margin: auto;padding-left: 20px"
+                        ><br/>
+                    </div>
+                    <button type="submit"
+                            class="w3-input w3-round-xxlarge w3-ripple"
+                            style="width: 50%;margin: auto;background-color: #333333;color: white;font-weight: bolder"
+                    >Log In
+                    </button>
+                </form>
+            </div>
+            <footer class="w3-container" style="text-align: center;margin-top: 30px;color: #a9a9a9">
+                <span>From authorized server</span>
+            </footer>
+        </div>
+
+    </div>
+    <div class="w3-col" style="width:20%">&nbsp</div>
+</div>
+</body>
+</html>
