@@ -4,10 +4,12 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,7 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -35,6 +38,7 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain asSecurityFilterChain(HttpSecurity http) throws Exception {
+        //无法放行自定义登录页面
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http
                 .csrf().disable()
@@ -44,12 +48,7 @@ public class SecurityConfig {
                 )
                 .oidc(withDefaults());
         http
-                .formLogin()
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .loginPage("/authLogin")//自定义登录页面
-                .loginProcessingUrl("/authLogin/login")//自定义的登录请求URL
-                .failureUrl("/authLogin?error");
+                .formLogin().loginPage("/authLogin");
         return http.build();
     }
 
@@ -67,12 +66,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.formLogin()
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .loginPage("/authLogin")
-                .loginProcessingUrl("/authLogin/login")
-                .failureUrl("/authLogin?error");
+        http.formLogin();
         return http.build();
     }
 

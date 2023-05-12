@@ -9,7 +9,7 @@ spring:
     password: 123456
   mybatis-plus:
     configuration:
-#      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   security:
     user:
       password:
