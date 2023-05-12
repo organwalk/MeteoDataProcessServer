@@ -5,7 +5,7 @@ import com.weather.mapper.Redis.meteorology.MeteorologyMapper;
 import com.weather.mapper.MySQL.meteorology.MeteorologyMySQLMapper;
 import com.weather.service.meteorology.MeteorologyService;
 import com.weather.utils.MeteorologyResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,11 +17,11 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
+@AllArgsConstructor
 public class MeteorologyServiceImpl implements MeteorologyService {
-    @Autowired
-    MeteorologyMapper meteorologyMapper;
-    @Autowired
-    MeteorologyMySQLMapper meteorologyMySQLMapper;
+
+    private final MeteorologyMapper meteorologyMapper;
+    private final MeteorologyMySQLMapper meteorologyMySQLMapper;
 
     //4.6 获取任一小时的分钟气象信息
     @Override

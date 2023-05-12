@@ -7,7 +7,6 @@ import com.weather.mapper.MySQL.station.StationDateMapper;
 import com.weather.service.station.StationDateService;
 import com.weather.utils.StationDateResult;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

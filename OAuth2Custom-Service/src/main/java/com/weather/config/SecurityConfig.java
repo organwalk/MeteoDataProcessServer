@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -12,7 +13,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationProvider;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
@@ -30,33 +30,30 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 public class SecurityConfig {
 
     @Bean
     @Order(1)
     public SecurityFilterChain asSecurityFilterChain(HttpSecurity http) throws Exception {
+        //无法放行自定义登录页面
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-
         http
-                .csrf()
-                .disable()
+                .csrf().disable()
                 .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .authorizationEndpoint(
                         a -> a.authenticationProviders(getAuthorizationEndpointProviders())
                 )
-
-                .oidc(Customizer.withDefaults());
-        //自动重定向到登录页面
-        http.exceptionHandling(
-                e -> e.authenticationEntryPoint(
-                        new LoginUrlAuthenticationEntryPoint("/login")
-                )
-        );
+                .oidc(withDefaults());
+        http
+                .formLogin().loginPage("/authLogin");
         return http.build();
     }
 
-    private Consumer<List<AuthenticationProvider>> getAuthorizationEndpointProviders() {
+    @Bean
+    public Consumer<List<AuthenticationProvider>> getAuthorizationEndpointProviders() {
         return providers -> {
             for (AuthenticationProvider p : providers) {
                 if (p instanceof OAuth2AuthorizationCodeRequestAuthenticationProvider x) {
@@ -68,10 +65,8 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.formLogin()
-             .and()
-                .authorizeHttpRequests().anyRequest().authenticated();
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.formLogin();
         return http.build();
     }
 
@@ -90,6 +85,7 @@ public class SecurityConfig {
 
     //http://localhost:9194/oauth2/jwks
 
+    //生成jwt令牌的固定写法，无需维护
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
         RSAKey rsaKey = generateRsa();

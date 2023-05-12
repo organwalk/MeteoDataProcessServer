@@ -10,6 +10,10 @@ spring:
   mybatis-plus:
     configuration:
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    view-names: authLogin
 logging:
   level:
     org:

@@ -3,19 +3,17 @@ package com.weather;
 import com.weather.client.UDPClient;
 import com.weather.service.udpService.MeteoDataService;
 import com.weather.service.udpService.TokenService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@AllArgsConstructor
 public class MeteoObtainApplication implements CommandLineRunner {
-    @Autowired
-    private UDPClient udpClient;
-    @Autowired
-    private TokenService tokenService;
-    @Autowired
-    private MeteoDataService meteoDataService;
+    private final UDPClient udpClient;
+    private final TokenService tokenService;
+    private final MeteoDataService meteoDataService;
 
     public static void main(String[] args) {
         SpringApplication.run(MeteoObtainApplication.class);

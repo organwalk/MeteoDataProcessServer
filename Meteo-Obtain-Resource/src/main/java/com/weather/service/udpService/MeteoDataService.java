@@ -6,7 +6,6 @@ import com.weather.entity.request.GetAllStationCode;
 import com.weather.entity.request.GetMeteoData;
 import com.weather.entity.request.GetStationDateRange;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
