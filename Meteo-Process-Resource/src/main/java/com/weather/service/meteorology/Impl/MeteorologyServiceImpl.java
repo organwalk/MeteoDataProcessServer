@@ -87,7 +87,7 @@ public class MeteorologyServiceImpl implements MeteorologyService {
 
     //4.7 获取任一天的小时气象信息
     @Override
-    public MeteorologyResult getMeteorologyByDay(String station, String date, String which) {
+    public MeteorologyResult getMeteorologyByDay(String station, String date, String which,String type) {
         //用于存储Redis数据获取结果
         List<String[]> redisResults = null;
         //用于存储MySQL数据获取结果
@@ -127,8 +127,15 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             String dataSource = station + "_weather_" + date.split("-")[0];
             String startDateTime = date + " " + "00:00:00";
             String endDateTime = date + " " + "23:00:00";
-            List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDay(dataSource, startDateTime, endDateTime, which);
-            SQLResults = SQLResult(meteorologyList);
+            if (type.equals("1")){
+                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDay(dataSource, startDateTime, endDateTime, which);
+                SQLResults = SQLResult(meteorologyList);
+            }else if (type.equals("2")){
+                List<Meteorology> meteorologyList = meteorologyMySQLMapper.selectMeteorologyDayToCharts(dataSource, startDateTime, endDateTime, which);
+                SQLResults = SQLResult(meteorologyList);
+            }
+
+
         }
         // 检查redis数据获取是否有结果
         if (!whichResults.isEmpty()) {
@@ -319,6 +326,8 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         }
 
     }
+
+
 
     //统一MySQL查询结果
     private List<List<String>> SQLResult(List<Meteorology> meteorologyList) {

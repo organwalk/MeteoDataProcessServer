@@ -5,6 +5,7 @@ import com.weather.entity.Meteorology;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
@@ -44,7 +45,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
                                          @Param("which") String which);
 
     @Select("<script>" +
-            "SELECT time" +
+            "SELECT datetime" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
@@ -59,6 +60,25 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
             "</script>")
     @ResultMap(value = "SQLResults")
     List<Meteorology> selectMeteorologyDay(@Param("datasource") String datasource,
+                                           @Param("startDateTime") String startDateTime,
+                                           @Param("endDateTime") String endDateTime,
+                                           @Param("which") String which);
+    @Select("<script>" +
+            "SELECT time" +
+            "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
+            "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
+            "<if test=\"which.contains('3'.toString())\">, speed</if>" +
+            "<if test=\"which.contains('4'.toString())\">, direction</if>" +
+            "<if test=\"which.contains('5'.toString())\">, rain</if>" +
+            "<if test=\"which.contains('6'.toString())\">, sunlight</if>" +
+            "<if test=\"which.contains('7'.toString())\">, pm25</if>" +
+            "<if test=\"which.contains('8'.toString())\">, pm10</if>" +
+            " FROM ${datasource} WHERE DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:%s') &gt;= '${startDateTime}' " +
+            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:%s') &lt;= '${endDateTime}' " +
+            "  AND DATE_FORMAT(dateTime, '%i') = '00'" +"  AND DATE_FORMAT(dateTime, '%s') = '00'" +
+            "</script>")
+    @ResultMap(value = "SQLResults")
+    List<Meteorology> selectMeteorologyDayToCharts(@Param("datasource") String datasource,
                                            @Param("startDateTime") String startDateTime,
                                            @Param("endDateTime") String endDateTime,
                                            @Param("which") String which);
