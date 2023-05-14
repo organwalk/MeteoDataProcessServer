@@ -4,16 +4,15 @@ import com.weather.service.meteorology.MeteorologyService;
 import com.weather.utils.MeteorologyResult;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/qx")
 @AllArgsConstructor
 public class MeteorologyController {
     private final MeteorologyService meteorologyService;
+
+
     @PostMapping("/stat_hour")
     public MeteorologyResult getMeteorologyByHour(@RequestParam String station,
                                                   @RequestParam String date,
@@ -24,11 +23,12 @@ public class MeteorologyController {
     @PostMapping("/stat_day")
     public MeteorologyResult getMeteorologyByDay(@RequestParam String station,
                                                   @RequestParam String date,
-                                                  @RequestParam String which){
-        return meteorologyService.getMeteorologyByDay(station,date,which);
+                                                  @RequestParam String which,
+                                                 @RequestParam String type){
+        return meteorologyService.getMeteorologyByDay(station,date,which,type);
     }
     @PostMapping("/stat_day_range")
-    public MeteorologyResult getMeteorologyByDay(@RequestParam String station,
+    public MeteorologyResult getMeteorologyByDayRange(@RequestParam String station,
                                                  @RequestParam String start_date,
                                                  @RequestParam String end_date,
                                                  @RequestParam String which){

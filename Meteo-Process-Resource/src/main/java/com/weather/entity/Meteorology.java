@@ -18,6 +18,7 @@ public class Meteorology extends Model<Meteorology> {
     private String sunlight;
     private String pm25;
     private String pm10;
+    private String dataSum;
 
     public Integer getId() {
         return id;
@@ -123,6 +124,13 @@ public class Meteorology extends Model<Meteorology> {
         this.pm10 = pm10;
     }
 
+    public String getDataSum() {
+        return dataSum;
+    }
+
+    public void setDataSum(String dataSum) {
+        this.dataSum = dataSum;
+    }
 
     @Override
     public String toString() {
