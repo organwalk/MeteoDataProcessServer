@@ -121,7 +121,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
             "  AND DATE_FORMAT(dateTime, '%i') = '00'" +
             "  AND DATE_FORMAT(dateTime, '%s') = '00'" +
             "UNION " +
-            "SELECT time" +
+            "SELECT datetime" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
