@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .usernameParameter("username")
                 .passwordParameter("password")
                 .loginPage("/authLogin")//自定义登录页面
+                //此处待处理
                 .loginProcessingUrl("/authLogin/login")//自定义的登录请求URL
                 .failureUrl("/authLogin?error");
         return http.build();
