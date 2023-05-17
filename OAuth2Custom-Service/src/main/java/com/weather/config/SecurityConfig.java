@@ -20,7 +20,9 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -48,7 +50,12 @@ public class SecurityConfig {
                 )
                 .oidc(withDefaults());
         http
-                .formLogin().loginPage("/authLogin");
+                .formLogin()
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .loginPage("/authLogin")//自定义登录页面
+                .loginProcessingUrl("/authLogin/login")//自定义的登录请求URL
+                .failureUrl("/authLogin?error");
         return http.build();
     }
 
@@ -66,7 +73,8 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.formLogin();
+        http.formLogin()
+                .loginProcessingUrl("/authLogin/login");
         return http.build();
     }
 
