@@ -12,7 +12,7 @@ public class AuthController {
     public ModelAndView showAuthLogin(@RequestParam(name = "error", required = false) String error) {
         ModelAndView modelAndView = new ModelAndView("authLogin");
         if (error != null) {
-            modelAndView.addObject("errorMessage", "账号或密码错误");
+            modelAndView.addObject("errorMessage", "用户名或密码错误");
         }
         return modelAndView;
     }
