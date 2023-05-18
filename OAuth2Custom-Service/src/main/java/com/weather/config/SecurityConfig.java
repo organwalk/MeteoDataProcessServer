@@ -54,7 +54,6 @@ public class SecurityConfig {
                 .usernameParameter("username")
                 .passwordParameter("password")
                 .loginPage("/authLogin")//自定义登录页面
-                //此处待处理
                 .loginProcessingUrl("/authLogin/login")//自定义的登录请求URL
                 .failureUrl("/authLogin?error");
         return http.build();
@@ -75,7 +74,11 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.formLogin()
-                .loginProcessingUrl("/authLogin/login");
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .loginPage("/authLogin")
+                .loginProcessingUrl("/authLogin/login")
+                .failureUrl("/authLogin?error");
         return http.build();
     }
 
