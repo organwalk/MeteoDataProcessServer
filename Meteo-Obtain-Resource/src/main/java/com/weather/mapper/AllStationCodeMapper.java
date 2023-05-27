@@ -15,6 +15,6 @@ public class AllStationCodeMapper {
    public String getAllStationCode(String key) {
        String stationCode = redisTemplate.opsForHash().keys(key).toString();
        String stationCode1 = stationCode.replaceAll("\\[|\\]", "").trim();
-       return stationCode1.replaceAll("\\]","").trim();
+       return stationCode1;
    }
 }

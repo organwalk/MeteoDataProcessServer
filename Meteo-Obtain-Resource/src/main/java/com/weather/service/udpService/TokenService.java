@@ -41,12 +41,6 @@ public class TokenService {
         VoidToken voidToken = new VoidToken(code,token);
         ObjectMapper mapper = new ObjectMapper();
         String voidTokenRequest = mapper.writeValueAsString(voidToken);
-        /*String ifTokenExist = String.valueOf(tokenMapper.deleteToken("token:asdfghjklzxcvbnm"));
-        if(ifTokenExist == String.valueOf(false)){
-
-        }else {
-            System.out.println("redis本无token！");
-        }*/
         udpClient.send(voidTokenRequest);
     }
 }
