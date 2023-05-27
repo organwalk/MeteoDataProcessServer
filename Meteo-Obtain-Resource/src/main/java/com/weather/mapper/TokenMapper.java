@@ -12,8 +12,4 @@ public class TokenMapper {
     public String getToken(String key) {
             return redisTemplate.opsForValue().get(key);
     }
-
-    public Boolean deleteToken(String key){
-        return redisTemplate.delete(key);
-    }
 }
