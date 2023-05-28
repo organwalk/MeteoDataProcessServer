@@ -1,5 +1,6 @@
 package com.weather.handler.response;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -10,9 +11,9 @@ import java.util.List;
 
 
 @Component
+@AllArgsConstructor
 public class GetMeteoDateRangeHandler {
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     public void saveMeteoDateRangeToRedis(String meteoDateRange) {
         List<String> meteoDateRangeList = new ArrayList<>();
         String[] meteoDateRangeData = meteoDateRange.split(",");

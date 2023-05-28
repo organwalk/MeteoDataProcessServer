@@ -14,7 +14,6 @@ public class GetAllStationCodeHandler {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-
     public GetAllStationCodeHandler(RedisTemplate<String , String> redisTemplate){
         this.redisTemplate = redisTemplate;
     }

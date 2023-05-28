@@ -26,8 +26,7 @@ public class MeteoDataService {
 
     public void getAllStationCode() throws Exception {
         int code = 5;
-        String token = tokenMapper.getToken("token:asdfghjklzxcvbnm");
-
+        String token = tokenMapper.getToken("root");
         GetAllStationCode getAllStationCode = new GetAllStationCode(code,token);
         ObjectMapper mapper = new ObjectMapper();
         String getAllStationCodeRequest = mapper.writeValueAsString(getAllStationCode);
@@ -36,7 +35,7 @@ public class MeteoDataService {
 
     public void getAllStationDataRange() throws Exception {
         int code = 7;
-        String token = tokenMapper.getToken("token:asdfghjklzxcvbnm");
+        String token = tokenMapper.getToken("root");
         String station = allStationCodeMapper.getAllStationCode("allStationCode:station&name");
 
         GetStationDateRange getStationDateRange = new GetStationDateRange(code,token,station);
@@ -47,7 +46,7 @@ public class MeteoDataService {
 
     public void getMeteoData() throws Exception {
         int code = 9;
-        String token = tokenMapper.getToken("token:asdfghjklzxcvbnm");
+        String token = tokenMapper.getToken("root");
         String start = "2023-04-01";
         String end = "2023-04-04";
 

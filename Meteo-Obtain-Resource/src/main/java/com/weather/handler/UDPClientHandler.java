@@ -11,6 +11,7 @@ import io.netty.channel.socket.DatagramPacket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 @Component
@@ -28,12 +29,12 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
     private GetMeteoDataHandler getMeteoDataHandler;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) {
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws UnsupportedEncodingException {
         ByteBuf content = packet.content();
         ByteBuffer byteBuffer = content.nioBuffer();
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
-        String response = new String(bytes);
+        String response = new String(bytes,"GBK");
         Gson gson = new Gson();
         JsonElement jsonElement = gson.fromJson(response, JsonElement.class);
         int code = jsonElement.getAsJsonObject().get("code").getAsInt();
@@ -41,34 +42,26 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             case 2:
                 System.out.println("Received '获取令牌' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
                 String token = jsonElement.getAsJsonObject().get("token").getAsString();
-                getTokenHandler.saveTokenToRedis(token);
+                String username = "root";
+                getTokenHandler.saveTokenToRedis(username,token);
                 break;
             case 4:
                 System.out.println("Received '作废令牌' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                //待实现，当响应完成后，也应从redis中删除令牌，因为数据存储服务器不再接收该令牌，因此没有存储的必要
                 String key = jsonElement.getAsJsonObject().get("token").getAsString();
                 voidTokenHandler.deleteTokenInRedis(key);
                 break;
             case 6:
                 System.out.println("Received '获取所有气象站编号信息' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                //待实现，这里应该将获取的data作某种字符串处理，得到其中的值，然后存储进station表中
                 String allStationCode = jsonElement.getAsJsonObject().get("data").toString();
                 getAllStationCodeHandler.saveAllStationCodeToRedis(allStationCode);
                 break;
             case 8:
                 System.out.println("Received '获取指定气象站的数据日期范围' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                //待实现，这里应该将获取的data作某种字符串处理，得到其中的值，然后存储进station表中
-                String meteoDateRange = jsonElement.getAsJsonObject().get("data").toString();
+                String meteoDateRange = jsonElement.getAsJsonObject().get("date").toString();
                 getMeteoDateRangeHandler.saveMeteoDateRangeToRedis(meteoDateRange);
                 break;
             case 10:
                 System.out.println("Received '请求气象数据' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                /**
-                 * 待实现，这里应该将获取的station、date、data以目前假数据规范，即有序集合形式持久化成rdb文件
-                 * 尝试将其恢复至redis，名称应以”气象站编号_weather_年份“为规范
-                 * 完成redis-to-mysql，可调用python脚本
-                 * 合作实现
-                 **/
                 String station = jsonElement.getAsJsonObject().get("station").toString();
                 String date = jsonElement.getAsJsonObject().get("date").toString();
                 String meteoData = jsonElement.getAsJsonObject().get("data").toString();
@@ -79,7 +72,6 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                     getMeteoDataHandler.saveMeteoDataToRedis(station,date,meteoData);
                     System.out.println("数据还未传输完毕");
                 }
-
                 break;
             default:
                 System.out.println("Received unknown response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());

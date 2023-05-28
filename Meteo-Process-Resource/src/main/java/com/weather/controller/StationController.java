@@ -1,5 +1,6 @@
 package com.weather.controller;
 
+import com.weather.obtainclient.ObtainClient;
 import com.weather.service.station.StationDateService;
 import com.weather.service.station.StationService;
 import com.weather.utils.MeteorologyResult;
@@ -18,9 +19,12 @@ import java.time.LocalDateTime;
 public class StationController {
     private final StationService stationService;
     private final StationDateService stationDateService;
+    private final ObtainClient obtainClient;
 
     @GetMapping("/stations")
     public Result getStationInfo(@RequestParam(name = "station", required = false) String station){
+        String test = obtainClient.getTest();
+        System.out.println(test);
         if (station == null){
             System.out.println(station);
             return stationService.getStationInfo();

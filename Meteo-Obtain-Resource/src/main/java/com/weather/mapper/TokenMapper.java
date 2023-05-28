@@ -9,7 +9,7 @@ public class TokenMapper {
     @Autowired
     private RedisTemplate<String ,String> redisTemplate;
 
-    public String getToken(String key) {
-            return redisTemplate.opsForValue().get(key);
+    public String getToken(String username) {
+            return (String) redisTemplate.opsForHash().get("tokens",username);
     }
 }

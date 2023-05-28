@@ -19,13 +19,13 @@ public class TokenService {
 
     public void getToken() throws Exception {
         int code = 1;
-        String name = "user";
+        String name = "root";
         String password = "123456";
 
         GetToken getToken = new GetToken(code,name,password);
         ObjectMapper mapper = new ObjectMapper();
         String getTokenRequest = mapper.writeValueAsString(getToken);
-        String token = tokenMapper.getToken("token:asdfghjklzxcvbnm");
+        String token = tokenMapper.getToken("token");
         if(token != null){
             udpClient.send(getTokenRequest);
         }else {
@@ -36,7 +36,7 @@ public class TokenService {
 
     public void voidToken() throws Exception {
         int code = 3;
-        String token = tokenMapper.getToken("token:asdfghjklzxcvbnm");
+        String token = tokenMapper.getToken("token");
 
         VoidToken voidToken = new VoidToken(code,token);
         ObjectMapper mapper = new ObjectMapper();
