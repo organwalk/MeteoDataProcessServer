@@ -10,6 +10,10 @@ public class TokenMapper {
     private RedisTemplate<String ,String> redisTemplate;
 
     public String getToken(String username) {
-            return (String) redisTemplate.opsForHash().get("tokens",username);
+        return (String) redisTemplate.opsForHash().get("tokens",username);
+    }
+
+    public String voidToken(String username){
+        return String.valueOf(redisTemplate.opsForHash().delete("tokens",username));
     }
 }
