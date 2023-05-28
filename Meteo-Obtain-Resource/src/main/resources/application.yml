@@ -1,3 +1,5 @@
+server:
+  port: 9494
 udp:
   remote:
     host: 127.0.0.1
