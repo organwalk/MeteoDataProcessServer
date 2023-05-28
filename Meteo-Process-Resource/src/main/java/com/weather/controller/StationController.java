@@ -22,14 +22,21 @@ public class StationController {
     private final ObtainClient obtainClient;
 
     @GetMapping("/stations")
-    public Result getStationInfo(@RequestParam(name = "station", required = false) String station){
-        String test = obtainClient.getTest();
-        System.out.println(test);
+    public Result getStationInfo(@RequestParam(name = "station", required = false) String station,
+                                 @RequestHeader(name = "Authorization") String authorization){
+        //调用数据获取服务
+        String tokenValue = null;
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            tokenValue = authorization.substring(7);
+            obtainClient.getToken(tokenValue);
+        }
         if (station == null){
-            System.out.println(station);
+            obtainClient.getStationCode(tokenValue);
             return stationService.getStationInfo();
         }else {
-            System.out.println(station);
+            obtainClient.getDateRange(tokenValue,station);
+            //获取时间范围逻辑
+            obtainClient.getData(tokenValue,station,"2023-04-04","2023-04-05");
             return stationDateService.getStationDateByStationId(station);
         }
 
