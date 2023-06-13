@@ -16,8 +16,7 @@
     <modules>
         <module>Meteo-Process-Resource</module>
         <module>Meteo-Obtain-Resource</module>
-        <module>OAuth2Custom-Service</module>
-        <module>OAuth2CustomClient-Service</module>
+        <module>UserClient-Service</module>
     </modules>
 
     <properties>

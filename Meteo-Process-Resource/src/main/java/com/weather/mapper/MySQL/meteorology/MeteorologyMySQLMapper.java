@@ -84,7 +84,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
                                            @Param("which") String which);
 
     @Select("<script>" +
-            "SELECT datetime" +
+            "SELECT date" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
@@ -99,14 +99,26 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
             "  AND DATE_FORMAT(dateTime, '%i') = '00'" +
             "  AND DATE_FORMAT(dateTime, '%s') = '00'" +
             "</script>")
-    @ResultMap(value = "SQLResults")
+    @Results( id = "DateResults",
+            value =
+                    {
+                            @Result(column = "date",property = "date"),
+                            @Result(column = "humidity",property = "humidity"),
+                            @Result(column = "speed",property = "speed"),
+                            @Result(column = "direction",property = "direction"),
+                            @Result(column = "rain",property = "rain"),
+                            @Result(column = "sunlight",property = "sunlight"),
+                            @Result(column = "pm25",property = "pm25"),
+                            @Result(column = "pm10",property = "pm10")
+                    }
+    )
     List<Meteorology> selectMeteorologyDate(@Param("datasource") String datasource,
                                            @Param("startDateTime") String startDateTime,
                                            @Param("endDateTime") String endDateTime,
                                            @Param("which") String which);
 
     @Select("<script>" +
-            "SELECT datetime" +
+            "SELECT date" +
             "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
             "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
             "<if test=\"which.contains('3'.toString())\">, speed</if>" +
@@ -136,7 +148,7 @@ public interface MeteorologyMySQLMapper extends BaseMapper<Meteorology> {
             "  AND DATE_FORMAT(dateTime, '%i') = '00'" +
             "  AND DATE_FORMAT(dateTime, '%s') = '00'" +
             "</script>")
-    @ResultMap(value = "SQLResults")
+    @ResultMap(value = "DateResults")
     List<Meteorology> selectMeteorologyDateInOtherYear(@Param("datasourceStartDate") String dataSourceStartDate,
                                             @Param("datasourceEndDate") String dataSourceEndDate,
                                             @Param("startDateTime") String startDateTime,
