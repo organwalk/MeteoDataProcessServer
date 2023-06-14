@@ -8,4 +8,6 @@ import com.weather.utils.Result;
 public interface UserService {
     LoginRespond authUser(LoginRequest loginRequest);
     Result insertUser(UserRequest userRequest);
+    Result logout(String username);
+    String checkAccessToken(String username);
 }

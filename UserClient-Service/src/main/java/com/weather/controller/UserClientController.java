@@ -3,7 +3,6 @@ package com.weather.controller;
 import com.weather.entity.LoginRequest;
 import com.weather.entity.LoginRespond;
 import com.weather.entity.UserRequest;
-import com.weather.obtainclient.ObtainClient;
 import com.weather.service.UserService;
 import com.weather.utils.Result;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class UserClientController {
     private final UserService userService;
-    private final ObtainClient obtainClient;
 
     @PostMapping("/login")
     public LoginRespond login(@RequestBody LoginRequest loginRequest){
@@ -28,7 +26,13 @@ public class UserClientController {
 
     @PostMapping("/logout")
     public Result logout(@RequestParam String username){
-        return Result.success(obtainClient.voidToken(username));
+        return userService.logout(username);
+    }
+
+    // 供服务调用
+    @GetMapping("/check")
+    public String checkAccessToken(@RequestParam String username){
+        return userService.checkAccessToken(username);
     }
 
 }

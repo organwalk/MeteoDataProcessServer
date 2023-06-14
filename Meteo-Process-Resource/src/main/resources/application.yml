@@ -2,6 +2,12 @@ server:
   port: 9394
 
 spring:
+  application:
+    name: meteo-process-resource
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -17,4 +23,3 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-jwksUri: http://localhost:9194/oauth2/jwks

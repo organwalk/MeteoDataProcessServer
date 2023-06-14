@@ -8,13 +8,24 @@ import lombok.Data;
 public class LoginRespond {
     private Integer code;
     private Boolean success;
-    private Object accessToken;
+    private Auth auth;
 
-    public static LoginRespond ok (String accessToken){
+    @Data
+    @Builder
+    static class Auth {
+        private String name;
+        private String access_token;
+    }
+
+    public static LoginRespond ok (String name,String accessToken){
+        Auth auth = Auth.builder()
+                .name(name)
+                .access_token(accessToken)
+                .build();
         return LoginRespond.builder()
                 .code(200)
                 .success(true)
-                .accessToken(accessToken)
+                .auth(auth)
                 .build();
     }
 
@@ -22,7 +33,6 @@ public class LoginRespond {
         return LoginRespond.builder()
                 .code(404)
                 .success(false)
-                .accessToken("user can not found")
                 .build();
     }
 
@@ -30,7 +40,6 @@ public class LoginRespond {
         return LoginRespond.builder()
                 .code(500)
                 .success(false)
-                .accessToken("auth fail")
                 .build();
     }
 }

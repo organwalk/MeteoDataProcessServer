@@ -3,15 +3,10 @@ package com.weather.controller;
 import com.weather.obtainclient.ObtainClient;
 import com.weather.service.station.StationDateService;
 import com.weather.service.station.StationService;
-import com.weather.utils.MeteorologyResult;
 import com.weather.utils.Result;
 import com.weather.utils.StationDateResult;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/qx")
@@ -23,20 +18,18 @@ public class StationController {
 
     @GetMapping("/stations")
     public Result getStationInfo(@RequestParam(name = "station", required = false) String station,
-                                 @RequestHeader(name = "Authorization") String authorization){
+                                 @RequestHeader(name = "name") String authorization){
         //调用数据获取服务
-        String tokenValue = null;
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            tokenValue = authorization.substring(7);
-            obtainClient.getToken(tokenValue);
+        if (authorization != null ) {
+            obtainClient.getToken(authorization);
         }
         if (station == null){
-            obtainClient.getStationCode(tokenValue);
+            obtainClient.getStationCode(authorization);
             return stationService.getStationInfo();
         }else {
-            obtainClient.getDateRange(tokenValue,station);
+            obtainClient.getDateRange(authorization,station);
             //获取时间范围逻辑
-            obtainClient.getData(tokenValue,station,"2023-04-04","2023-04-05");
+            obtainClient.getData(authorization,station,"2023-04-04","2023-04-05");
             return stationDateService.getStationDateByStationId(station);
         }
 

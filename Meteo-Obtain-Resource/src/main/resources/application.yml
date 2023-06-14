@@ -5,6 +5,8 @@ udp:
     host: 127.0.0.1
     port: 9092
 spring:
+  application:
+    name: meteo-obtain-resource
   data:
     redis:
       database: 15

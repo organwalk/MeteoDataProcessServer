@@ -17,6 +17,7 @@
         <module>Meteo-Process-Resource</module>
         <module>Meteo-Obtain-Resource</module>
         <module>UserClient-Service</module>
+        <module>Meteo-GateWay</module>
     </modules>
 
     <properties>
