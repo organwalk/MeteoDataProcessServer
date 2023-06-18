@@ -2,15 +2,14 @@ package com.weather.handler.response;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
@@ -31,6 +30,7 @@ public class GetMeteoDataHandler {
             }
         }
         ZSetOperations<String, String> ops = redisTemplate.opsForZSet();
+//        Set<ZSetOperations.TypedTuple<String>> tuples = new HashSet<>();
         for (int i = 0; i < dataList.size(); i++) {
             String element = dataList.get(i).toString();
             // 将时间字符串与日期字符串拼接
@@ -41,7 +41,10 @@ public class GetMeteoDataHandler {
             ZoneId beijingZone = ZoneId.of("Asia/Shanghai"); // Use the time zone for Beijing
             ZonedDateTime beijingDateTime = ZonedDateTime.of(dateTime, beijingZone);
             long unixTimestamp = beijingDateTime.toEpochSecond(); // Get Unix timestamp in seconds
+            // 用TypedTuple封装 member 和 score
+//            tuples.add(new DefaultTypedTuple(element, (double) unixTimestamp));
             ops.add(key, element, unixTimestamp);
         }
+//        ops.add(key, tuples);
     }
 }
