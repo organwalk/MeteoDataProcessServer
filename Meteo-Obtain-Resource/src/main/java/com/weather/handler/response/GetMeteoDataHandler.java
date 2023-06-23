@@ -34,8 +34,10 @@ public class GetMeteoDataHandler {
         for (int i = 0; i < dataList.size(); i++) {
             String element = dataList.get(i).toString();
             // 将时间字符串与日期字符串拼接
-            String dateTimeStr = date.substring(1, 11) + " " + dataList.get(i).get(0).substring(1, 9);
-            //样例: 023-04-01 00:00:00
+//            String dateTimeStr = date.substring(1, 11) + " " + dataList.get(i).get(0).substring(1, 9);
+            String dateTimeStr = date.substring(1, 11) + " " + dataList.get(i).get(0).substring(3, 11);
+            System.out.println(dateTimeStr);
+            //样例: 2023-04-01 00:00:00
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, formatter);
             ZoneId beijingZone = ZoneId.of("Asia/Shanghai"); // Use the time zone for Beijing

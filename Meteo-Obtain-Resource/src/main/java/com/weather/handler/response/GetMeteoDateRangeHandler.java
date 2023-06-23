@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GetMeteoDateRangeHandler {
     private final RedisTemplate<String, String> redisTemplate;
-    public void saveMeteoDateRangeToRedis(String meteoDateRange) {
+    public void saveMeteoDateRangeToRedis(String d_station,String meteoDateRange) {
         List<String> meteoDateRangeList = new ArrayList<>();
         String[] meteoDateRangeData = meteoDateRange.split(",");
         for (String date : meteoDateRangeData){
@@ -25,7 +25,7 @@ public class GetMeteoDateRangeHandler {
 
         for (int i = 0; i < meteoDateRangeList.size(); i ++){
             String date = meteoDateRangeList.get(i);
-            redisTemplate.opsForList().rightPush("dateRange",date);
+            redisTemplate.opsForList().rightPush(d_station + ":dateRange",date);
         }
     }
 }

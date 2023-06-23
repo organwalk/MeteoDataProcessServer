@@ -34,7 +34,10 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         ByteBuffer byteBuffer = content.nioBuffer();
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
-        String response = new String(bytes,"GBK");
+        String response = new String(bytes);
+        System.out.println(response);
+        byte[] responseBytes = response.getBytes();
+        System.out.println("Response size: " + responseBytes.length + " bytes");
         Gson gson = new Gson();
         JsonElement jsonElement = gson.fromJson(response, JsonElement.class);
         int code = jsonElement.getAsJsonObject().get("code").getAsInt();
@@ -57,11 +60,13 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 break;
             case 8:
                 System.out.println("Received '获取指定气象站的数据日期范围' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                String d_station = jsonElement.getAsJsonObject().get("station").toString();
                 String meteoDateRange = jsonElement.getAsJsonObject().get("date").toString();
-                getMeteoDateRangeHandler.saveMeteoDateRangeToRedis(meteoDateRange);
+                getMeteoDateRangeHandler.saveMeteoDateRangeToRedis(d_station,meteoDateRange);
                 break;
             case 10:
                 System.out.println("Received '请求气象数据' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                System.out.println(jsonElement);
                 String station = jsonElement.getAsJsonObject().get("station").toString();
                 String date = jsonElement.getAsJsonObject().get("date").toString();
                 String meteoData = jsonElement.getAsJsonObject().get("data").toString();

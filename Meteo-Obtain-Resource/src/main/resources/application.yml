@@ -1,15 +1,25 @@
 server:
   port: 9494
+#udp:
+#  remote:
+#    host: 127.0.0.1
+#    port: 9092
 udp:
   remote:
-    host: 127.0.0.1
+    host: 192.168.1.132
     port: 9092
 spring:
   application:
     name: meteo-obtain-resource
+#  data:
+#    redis:
+#      database: 15
+#      host: 81.71.161.47
+#      port: 6379
+#      password: 123456
   data:
     redis:
-      database: 15
-      host: 81.71.161.47
+      database: 1
+      host: 192.168.1.132
       port: 6379
-      password: 123456
+      password: c209c209

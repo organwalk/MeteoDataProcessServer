@@ -29,7 +29,7 @@ public class StationController {
         }else {
             obtainClient.getDateRange(authorization,station);
             //获取时间范围逻辑
-            obtainClient.getData(authorization,station,"2023-04-04","2023-04-05");
+            obtainClient.getData(authorization,station,"2023-06-23","2023-06-23");
             return stationDateService.getStationDateByStationId(station);
         }
 
