@@ -1,86 +1,87 @@
 package com.weather.handler;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.weather.handler.response.*;
+import com.weather.handler.response.ResponseHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 @Component
+@Slf4j
 public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
-
     @Autowired
-    private GetTokenHandler getTokenHandler;
-    @Autowired
-    private VoidTokenHandler voidTokenHandler;
-    @Autowired
-    private GetAllStationCodeHandler getAllStationCodeHandler;
-    @Autowired
-    private GetMeteoDateRangeHandler getMeteoDateRangeHandler;
-    @Autowired
-    private GetMeteoDataHandler getMeteoDataHandler;
+    private ResponseHandler resHandler;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws UnsupportedEncodingException {
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet){
         ByteBuf content = packet.content();
         ByteBuffer byteBuffer = content.nioBuffer();
         byte[] bytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(bytes);
         String response = new String(bytes);
-        System.out.println(response);
-        byte[] responseBytes = response.getBytes();
-        System.out.println("Response size: " + responseBytes.length + " bytes");
-        Gson gson = new Gson();
-        JsonElement jsonElement = gson.fromJson(response, JsonElement.class);
-        int code = jsonElement.getAsJsonObject().get("code").getAsInt();
-        switch (code) {
+        log.info("Response size: " + response.getBytes().length + " bytes");
+        JsonElement jsonRes = new Gson().fromJson(response, JsonElement.class);
+        codeStatusController(jsonRes,packet);
+    }
+
+    public void codeStatusController(JsonElement jsonRes,DatagramPacket packet){
+
+        switch (Integer.parseInt(getValue(jsonRes,"code"))) {
             case 2:
-                System.out.println("Received '获取令牌' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                String token = jsonElement.getAsJsonObject().get("token").getAsString();
-                String username = "root";
-                getTokenHandler.saveTokenToRedis(username,token);
+                log.info("Received 'Get Token' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                resHandler.saveToken("root", jsonRes.getAsJsonObject().get("token").getAsString());
                 break;
             case 4:
-                System.out.println("Received '作废令牌' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                String key = jsonElement.getAsJsonObject().get("token").getAsString();
-                voidTokenHandler.deleteTokenInRedis(key);
+                log.info("Received 'Void Token' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                resHandler.deleteToken(jsonRes.getAsJsonObject().get("token").getAsString());
                 break;
             case 6:
-                System.out.println("Received '获取所有气象站编号信息' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                String allStationCode = jsonElement.getAsJsonObject().get("data").toString();
-                getAllStationCodeHandler.saveAllStationCodeToRedis(allStationCode);
+                log.info("Received 'Get All Meteorological Station ID Information' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                resHandler.saveAllStationCode(getValue(jsonRes,"data"));
                 break;
             case 8:
-                System.out.println("Received '获取指定气象站的数据日期范围' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                String d_station = jsonElement.getAsJsonObject().get("station").toString();
-                String meteoDateRange = jsonElement.getAsJsonObject().get("date").toString();
-                getMeteoDateRangeHandler.saveMeteoDateRangeToRedis(d_station,meteoDateRange);
+                log.info("Received 'Get Date Range of Specified Meteorological Station Data' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                resHandler
+                        .saveMeteoDateRange(
+                                getValue(jsonRes,"station"),
+                                getValue(jsonRes,"date")
+                        );
                 break;
             case 10:
-                System.out.println("Received '请求气象数据' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
-                System.out.println(jsonElement);
-                String station = jsonElement.getAsJsonObject().get("station").toString();
-                String date = jsonElement.getAsJsonObject().get("date").toString();
-                String meteoData = jsonElement.getAsJsonObject().get("data").toString();
-                if(jsonElement.getAsJsonObject().get("last").getAsInt() == 1) {
-                    getMeteoDataHandler.saveMeteoDataToRedis(station,date,meteoData);
-                    System.out.println("数据已传输完毕");
-                }else {
-                    getMeteoDataHandler.saveMeteoDataToRedis(station,date,meteoData);
-                    System.out.println("数据还未传输完毕");
+                log.info("Received 'Request Meteorological Data' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                System.out.println(jsonRes);
+                if (Integer.parseInt(getValue(jsonRes,"last")) == 1) {
+                    resHandler
+                            .saveMeteoData(
+                                    getValue(jsonRes,"station"),
+                                    getValue(jsonRes,"date"),
+                                    getValue(jsonRes,"data")
+                            );
+                    log.info("The 'last' is '1' ");
+                } else {
+                    resHandler
+                            .saveMeteoData(
+                                    getValue(jsonRes,"station"),
+                                    getValue(jsonRes,"date"),
+                                    getValue(jsonRes,"data")
+                            );
+                    log.info("The 'last' is '0' ");
                 }
                 break;
             default:
-                System.out.println("Received unknown response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
+                log.info("Received unknown response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
                 break;
         }
+
+    }
+
+    public String getValue(JsonElement jsonRes,String key){
+        return jsonRes.getAsJsonObject().get(key).toString();
     }
 }

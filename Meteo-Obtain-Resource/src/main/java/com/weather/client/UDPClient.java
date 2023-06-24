@@ -8,6 +8,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -21,6 +24,8 @@ public class UDPClient {
     private final Channel channel;
     private final InetSocketAddress serverAddress;
     private final UDPClientHandler udpClientHandler;
+
+    Logger logger = LogManager.getLogger(this.getClass());
 
     public UDPClient(Environment environment, UDPClientHandler udpClientHandler) {
         this.eventLoopGroup = new NioEventLoopGroup();
@@ -43,11 +48,10 @@ public class UDPClient {
                 .bind(0)
                 .syncUninterruptibly()
                 .channel();
-        // 打印日志信息
         if (channel.isActive()) {
-            System.out.println("UDP client connected to server " + serverAddress.getHostString() + ":" + serverAddress.getPort());
+            logger.info("UDP client connected to server " + serverAddress.getHostString() + ":" + serverAddress.getPort());
         } else {
-            System.out.println("UDP client failed to connect to server " + serverAddress.getHostString() + ":" + serverAddress.getPort());
+            logger.info("UDP client failed to connect to server " + serverAddress.getHostString() + ":" + serverAddress.getPort());
         }
     }
 
