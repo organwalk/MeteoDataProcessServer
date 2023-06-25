@@ -1,8 +1,8 @@
 package com.weather.service;
 
-import com.weather.entity.LoginRequest;
-import com.weather.entity.LoginRespond;
-import com.weather.entity.UserRequest;
+import com.weather.entity.request.LoginRequest;
+import com.weather.entity.respond.LoginRespond;
+import com.weather.entity.request.RegisterRequest;
 import com.weather.mapper.UserMapper;
 import com.weather.mapper.redis.UserRedis;
 import com.weather.obtainclient.ObtainClient;
@@ -24,11 +24,13 @@ public class UserServiceImpl implements UserService{
     public LoginRespond authUser(LoginRequest loginRequest) {
         String username = userMapper.getUid(loginRequest.getUsername());
         if ( username != null){
-            String encryptedPassword = userMapper.getEncryptedPassword(username);
-            Boolean passwordMatch = bCryptPasswordEncoder.matches(loginRequest.getPassword(),encryptedPassword);
             String token = bCryptPasswordEncoder.encode(username) + UUID.randomUUID();
             userRedis.saveToken(username,token);
-            return passwordMatch ? LoginRespond.ok(username,token) : LoginRespond.fail();
+            obtainClient.getToken(username);
+            return bCryptPasswordEncoder
+                    .matches(loginRequest.getPassword(),
+                            userMapper.getEncryptedPassword(username))
+                    ? LoginRespond.ok(username,token) : LoginRespond.fail();
         }else {
             return LoginRespond.not_found();
         }
@@ -36,17 +38,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Result insertUser(UserRequest userRequest) {
-        String encryptedPassword = bCryptPasswordEncoder.encode(userRequest.getPassword());
-        int code = userMapper.insertUser(userRequest.getUsername(),encryptedPassword);
-        return code!=0 ? Result.success("registration success") : Result.fail();
+    public Result insertUser(RegisterRequest registerRequest) {
+        return userMapper.insertUser(registerRequest.getUsername(),
+                bCryptPasswordEncoder.encode(registerRequest.getPassword())) != 0
+                ? Result.success("success") : Result.fail();
     }
 
     @Override
     public Result logout(String username) {
-        boolean obtain = obtainClient.voidToken(username);
         userRedis.voidAccessToken(username);
-        return obtain ? Result.success(true) : Result.fail();
+        return obtainClient.voidToken(username)
+                ? Result.success(true) : Result.fail();
     }
 
     @Override

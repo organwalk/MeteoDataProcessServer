@@ -7,8 +7,6 @@ public interface MeteorologyService {
     MeteorologyResult getMeteorologyByHour(String station,String date,String hour,String which);
     MeteorologyResult getMeteorologyByDay(String station,String date,String which,String type);
     MeteorologyResult getMeteorologyByDate(String station,String start_date,String end_date,String which);
-    MeteorologyResult corrcoefDate(String station,String start_date,String end_date,String correlation);
-
     MeteorologyResult getComplexMeteorology(String station,
                                             String start_date,
                                             String end_date,

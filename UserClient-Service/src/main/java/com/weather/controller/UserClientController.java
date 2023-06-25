@@ -1,8 +1,8 @@
 package com.weather.controller;
 
-import com.weather.entity.LoginRequest;
-import com.weather.entity.LoginRespond;
-import com.weather.entity.UserRequest;
+import com.weather.entity.request.LoginRequest;
+import com.weather.entity.respond.LoginRespond;
+import com.weather.entity.request.RegisterRequest;
 import com.weather.service.UserService;
 import com.weather.utils.Result;
 import lombok.AllArgsConstructor;
@@ -20,8 +20,8 @@ public class UserClientController {
     }
 
     @PostMapping("/register")
-    public Result register(@RequestBody UserRequest userRequest){
-        return userService.insertUser(userRequest);
+    public Result register(@RequestBody RegisterRequest registerRequest){
+        return userService.insertUser(registerRequest);
     }
 
     @PostMapping("/logout")

@@ -6,8 +6,6 @@ import org.springframework.web.service.annotation.HttpExchange;
 
 @HttpExchange("http://localhost:9494/api/obtain")
 public interface ObtainClient {
-    @GetExchange("/token/user")
-    boolean getToken(@RequestParam String name);
     @GetExchange("/meteo/station")
     boolean getStationCode(@RequestParam String name);
 

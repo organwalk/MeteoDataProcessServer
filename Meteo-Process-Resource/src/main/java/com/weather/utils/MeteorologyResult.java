@@ -1,24 +1,26 @@
 package com.weather.utils;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class MeteorologyResult {
     private int success;
     private String station;
     private Object data;
 
     public static MeteorologyResult success(String station, Object data){
-        MeteorologyResult meteorologyResult = new MeteorologyResult();
-        meteorologyResult.setSuccess(ResultCode.SUCCESS);
-        meteorologyResult.setStation(station);
-        meteorologyResult.setData(data);
-        return meteorologyResult;
+        return MeteorologyResult.builder()
+                .success(ResultCode.SUCCESS)
+                .station(station)
+                .data(data)
+                .build();
     }
 
     public static MeteorologyResult fail(){
-        MeteorologyResult meteorologyResult = new MeteorologyResult();
-        meteorologyResult.setSuccess(ResultCode.FAIL);
-        return meteorologyResult;
+        return MeteorologyResult.builder()
+                .success(ResultCode.FAIL)
+                .build();
     }
 }

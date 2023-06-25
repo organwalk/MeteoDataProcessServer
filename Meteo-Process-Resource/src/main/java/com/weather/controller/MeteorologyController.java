@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 public class MeteorologyController {
     private final MeteorologyService meteorologyService;
 
-
     @PostMapping("/stat_hour")
     public MeteorologyResult getMeteorologyByHour(@RequestParam String station,
                                                   @RequestParam String date,
@@ -33,13 +32,6 @@ public class MeteorologyController {
                                                  @RequestParam String end_date,
                                                  @RequestParam String which){
         return meteorologyService.getMeteorologyByDate(station,start_date,end_date,which);
-    }
-    @PostMapping("/correlation")
-    public MeteorologyResult corrcoefDate(@RequestParam String station,
-                                                 @RequestParam String start_date,
-                                                 @RequestParam String end_date,
-                                                 @RequestParam String correlation){
-        return meteorologyService.corrcoefDate(station,start_date,end_date,correlation);
     }
     @PostMapping("/query")
     public MeteorologyResult getComplexMeteorology(@RequestParam String station,

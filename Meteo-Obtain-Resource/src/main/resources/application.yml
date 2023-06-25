@@ -11,6 +11,14 @@ udp:
 spring:
   application:
     name: meteo-obtain-resource
+  rabbitmq:
+    host: 192.168.1.132
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        message-converter: json
 #  data:
 #    redis:
 #      database: 15
@@ -29,4 +37,8 @@ spring:
     url: jdbc:mysql://192.168.1.132:3306/meteo_data?useSSL=false
     username: root
     password: c209c209
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 

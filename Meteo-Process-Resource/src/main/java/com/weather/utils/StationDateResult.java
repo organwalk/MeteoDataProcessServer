@@ -1,22 +1,24 @@
 package com.weather.utils;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class StationDateResult implements Result{
     private int success;
     private Object date;
 
     public static StationDateResult success(Object date){
-        StationDateResult stationDateResult = new StationDateResult();
-        stationDateResult.setSuccess(ResultCode.SUCCESS);
-        stationDateResult.setDate(date);
-        return stationDateResult;
+        return StationDateResult.builder()
+                .success(ResultCode.SUCCESS)
+                .date(date)
+                .build();
     }
 
     public static StationDateResult fail(){
-        StationDateResult stationDateResult = new StationDateResult();
-        stationDateResult.setSuccess(ResultCode.FAIL);
-        return stationDateResult;
+        return StationDateResult.builder()
+                .success(ResultCode.FAIL)
+                .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.weather.entity;
+package com.weather.entity.respond;
 
 import lombok.Builder;
 import lombok.Data;
