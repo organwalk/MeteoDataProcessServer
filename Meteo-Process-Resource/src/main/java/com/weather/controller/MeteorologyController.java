@@ -33,8 +33,9 @@ public class MeteorologyController {
     public MeteorologyResult getMeteorologyByDayRange(@RequestParam String station,
                                                  @RequestParam String start_date,
                                                  @RequestParam String end_date,
-                                                 @RequestParam String which){
-        return meteorologyService.getMeteorologyByDate(station,start_date,end_date,which);
+                                                 @RequestParam String which,
+                                                 @RequestHeader(name = "name") String authorization){
+        return meteorologyService.getMeteorologyByDate(authorization,station,start_date,end_date,which);
     }
     @PostMapping("/query")
     public MeteorologyResult getComplexMeteorology(@RequestParam String station,
@@ -55,8 +56,10 @@ public class MeteorologyController {
                                                    @RequestParam(required = false) String start_pm25,
                                                    @RequestParam(required = false) String end_pm25,
                                                    @RequestParam(required = false) String start_pm10,
-                                                   @RequestParam(required = false) String end_pm10){
-        return meteorologyService.getComplexMeteorology(station,
+                                                   @RequestParam(required = false) String end_pm10,
+                                                   @RequestHeader(name = "name") String authorization){
+        return meteorologyService.getComplexMeteorology(authorization,
+                                                        station,
                                                         start_date,
                                                         end_date,
                                                         start_temperature,

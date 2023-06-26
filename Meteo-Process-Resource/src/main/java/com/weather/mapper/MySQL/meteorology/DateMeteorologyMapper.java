@@ -9,19 +9,17 @@ import java.util.List;
 public interface DateMeteorologyMapper {
     @Select("<script>" +
             "SELECT date" +
-            "<if test=\"which.contains('1'.toString())\">, temperature</if>" +
-            "<if test=\"which.contains('2'.toString())\">, humidity</if>" +
-            "<if test=\"which.contains('3'.toString())\">, speed</if>" +
-            "<if test=\"which.contains('4'.toString())\">, direction</if>" +
-            "<if test=\"which.contains('5'.toString())\">, rain</if>" +
-            "<if test=\"which.contains('6'.toString())\">, sunlight</if>" +
-            "<if test=\"which.contains('7'.toString())\">, pm25</if>" +
-            "<if test=\"which.contains('8'.toString())\">, pm10</if>" +
-            " FROM ${datasource} WHERE DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:%s') &gt;= '${startDateTime}' " +
-            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:%s') &lt;= '${endDateTime}' " +
-            "  AND DATE_FORMAT(dateTime, '%H') = '08'" +
-            "  AND DATE_FORMAT(dateTime, '%i') = '00'" +
-            "  AND DATE_FORMAT(dateTime, '%s') = '00'" +
+            "<if test=\"which.contains('1'.toString())\">, ROUND(AVG(COALESCE(temperature, 0)), 2) AS temperature</if>" +
+            "<if test=\"which.contains('2'.toString())\">, ROUND(AVG(COALESCE(humidity, 0)), 2) AS humidity</if>" +
+            "<if test=\"which.contains('3'.toString())\">, ROUND(AVG(COALESCE(speed, 0)), 2) AS speed</if>" +
+            "<if test=\"which.contains('4'.toString())\">, ROUND(AVG(COALESCE(direction, 0)), 2) AS direction</if>" +
+            "<if test=\"which.contains('5'.toString())\">, ROUND(AVG(COALESCE(rain, 0)), 2) AS rain</if>" +
+            "<if test=\"which.contains('6'.toString())\">, ROUND(AVG(COALESCE(sunlight, 0)), 2) AS sunlight</if>" +
+            "<if test=\"which.contains('7'.toString())\">, ROUND(AVG(COALESCE(pm25, 0)), 2) AS pm25</if>" +
+            "<if test=\"which.contains('8'.toString())\">, ROUND(AVG(COALESCE(pm10, 0)), 2) AS pm10</if> " +
+            "FROM ${datasource} " +
+            "WHERE date &gt;= #{startDateTime} AND date &lt; #{endDateTime} " +
+            "GROUP BY date" +
             "</script>")
     @Results(value =
             {

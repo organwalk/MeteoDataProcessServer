@@ -3,8 +3,6 @@ package com.weather.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.entity.message.ReqUdpMsg;
 import com.weather.listener.TaskStatusListener;
-import com.weather.mapper.SaveToMySQLMapper;
-import com.weather.repository.RedisRepository;
 import com.weather.service.UdpRequestService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
