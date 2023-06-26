@@ -41,6 +41,7 @@ public interface OtherYearDateMeteorologyMapper {
     @Results(value =
             {
                     @Result(column = "date", property = "date"),
+                    @Result(column = "temperature", property = "temperature"),
                     @Result(column = "humidity", property = "humidity"),
                     @Result(column = "speed", property = "speed"),
                     @Result(column = "direction", property = "direction"),

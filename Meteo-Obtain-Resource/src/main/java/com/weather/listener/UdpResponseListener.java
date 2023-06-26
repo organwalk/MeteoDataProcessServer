@@ -21,7 +21,7 @@ public class UdpResponseListener {
             case 2 -> resHandler.saveToken(msg.getUsername(),msg.getToken());
             case 6 -> resHandler.saveAllStationCode(msg.getData());
             case 8 -> resHandler.saveMeteoDateRange(msg.getStation(),msg.getDate());
-            case 10 -> resHandler.saveMeteoData(msg.getStation(),msg.getDate(),msg.getData());
+            case 10 -> resHandler.saveMeteoData(msg.getLast(), msg.getStation(),msg.getDate(),msg.getData());
         }
     }
 }

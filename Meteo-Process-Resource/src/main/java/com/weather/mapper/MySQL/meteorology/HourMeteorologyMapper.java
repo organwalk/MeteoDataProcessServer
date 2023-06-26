@@ -18,12 +18,12 @@ public interface HourMeteorologyMapper {
             "<if test=\"which.contains('7'.toString())\">, pm25</if>" +
             "<if test=\"which.contains('8'.toString())\">, pm10</if>" +
             " FROM ${datasource} WHERE DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:00') &gt;= '${startDateTime}' " +
-            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:00') &lt;= '${endDateTime}' " +
-            "  AND DATE_FORMAT(dateTime, '%s') = '00'" +
+            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:59') &lt;= '${endDateTime}' " +
             "</script>")
     @Results(value =
                     {
                             @Result(column = "datetime",property = "datetime"),
+                            @Result(column = "temperature", property = "temperature"),
                             @Result(column = "humidity",property = "humidity"),
                             @Result(column = "speed",property = "speed"),
                             @Result(column = "direction",property = "direction"),

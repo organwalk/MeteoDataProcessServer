@@ -1,5 +1,6 @@
 package com.weather.controller;
 
+import com.weather.obtainclient.ObtainClient;
 import com.weather.service.meteorology.MeteorologyService;
 import com.weather.utils.MeteorologyResult;
 import lombok.AllArgsConstructor;
@@ -16,15 +17,17 @@ public class MeteorologyController {
     public MeteorologyResult getMeteorologyByHour(@RequestParam String station,
                                                   @RequestParam String date,
                                                   @RequestParam String hour,
-                                                  @RequestParam String which){
-        return meteorologyService.getMeteorologyByHour(station,date,hour,which);
+                                                  @RequestParam String which,
+                                                  @RequestHeader(name = "name") String authorization){
+        return meteorologyService.getMeteorologyByHour(authorization,station,date,hour,which);
     }
     @PostMapping("/stat_day")
     public MeteorologyResult getMeteorologyByDay(@RequestParam String station,
                                                   @RequestParam String date,
                                                   @RequestParam String which,
-                                                 @RequestParam String type){
-        return meteorologyService.getMeteorologyByDay(station,date,which,type);
+                                                 @RequestParam String type,
+                                                 @RequestHeader(name = "name") String authorization){
+        return meteorologyService.getMeteorologyByDay(authorization,station,date,which,type);
     }
     @PostMapping("/stat_day_range")
     public MeteorologyResult getMeteorologyByDayRange(@RequestParam String station,

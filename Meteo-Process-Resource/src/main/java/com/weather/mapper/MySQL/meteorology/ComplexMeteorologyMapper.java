@@ -33,6 +33,7 @@ public interface ComplexMeteorologyMapper {
     @Results(value =
             {
                     @Result(column = "datetime",property = "datetime"),
+                    @Result(column = "temperature", property = "temperature"),
                     @Result(column = "humidity",property = "humidity"),
                     @Result(column = "speed",property = "speed"),
                     @Result(column = "direction",property = "direction"),
@@ -42,10 +43,6 @@ public interface ComplexMeteorologyMapper {
                     @Result(column = "pm10",property = "pm10")
             }
     )
-    List<Meteorology> selectMeteorologyHour(@Param("datasource") String datasource,
-                                            @Param("startDateTime") String startDateTime,
-                                            @Param("endDateTime") String endDateTime,
-                                            @Param("which") String which);
     List<Meteorology> selectMeteorologyComplex(
             @Param("datasource") String datasource,
             @Param("station") String station,

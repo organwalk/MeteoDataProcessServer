@@ -14,7 +14,7 @@ spring:
 #    url: jdbc:mysql://localhost:3306/meteo_data?useSSL=false
 #    username: root
 #    password: 123456
-    url: jdbc:mysql://192.168.1.132:3306/meteo_data?useSSL=false
+    url: jdbc:mysql://81.71.161.47:33306/meteo_data?useSSL=false
     username: root
     password: c209c209
 #  data:
@@ -26,8 +26,8 @@ spring:
   data:
     redis:
       database: 1
-      host: 192.168.1.132
-      port: 6379
+      host: 81.71.161.47
+      port: 36379
       password: c209c209
 mybatis-plus:
   configuration:

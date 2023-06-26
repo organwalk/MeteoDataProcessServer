@@ -1,11 +1,11 @@
 package com.weather.entity.message;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data
 public class ResUdpMsg {
     private int code;
+    private int last;
     private String username;
     private String token;
     private String data;
@@ -31,8 +31,9 @@ public class ResUdpMsg {
         this.date = date;
     }
 
-    public ResUdpMsg(int code, String station, String date, String data){
+    public ResUdpMsg(int code, int last, String station, String date, String data){
         this.code = code;
+        this.last = last;
         this.station = station;
         this.date = date;
         this.data = data;

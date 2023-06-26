@@ -19,43 +19,59 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     private final DateMeteorologyMapper dateMapper;
     private final OtherYearDateMeteorologyMapper otherYearDateMapper;
     private final ComplexMeteorologyMapper complexMapper;
+    private final UtilsMapper utils;
     private final ObtainClient obtainClient;
 
     @Override
-    public MeteorologyResult getMeteorologyByHour(String station, String date, String hour, String which) {
-        List<List<String>> SQLResults = new ArrayList<>();
+    public MeteorologyResult getMeteorologyByHour(String name, String station, String date, String hour, String which) {
         String dataSource = station + "_weather_" + date.split("-")[0];
-        String startDateTime = date + " " + hour + ":00:00";
-        String endDateTime = date + " " + hour + ":59:00";
-        List<Meteorology> meteorologyList = hourMapper
-                .selectMeteorologyHour(dataSource, startDateTime, endDateTime, which);
-        SQLResults = SQLResult(meteorologyList, "dateTime");
-        return !SQLResults.isEmpty() ?
-                MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        if (utils.checkMeteoDataExist(dataSource, date) > 0){
+            List<Meteorology> meteorologyList = hourMapper
+                    .selectMeteorologyHour(dataSource,
+                            String.format("%s %s:00:00", date, hour),
+                            String.format("%s %s:00:00", date, hour),
+                            which
+                    );
+            List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
+            return !SQLResults.isEmpty() ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        }else {
+            return obtainClient.getData(name,station,date,date) ?
+                    getMeteorologyByHour(name, station, date, hour, which) : MeteorologyResult.fail();
+        }
     }
 
     @Override
-    public MeteorologyResult getMeteorologyByDay(String station, String date, String which, String type) {
+    public MeteorologyResult getMeteorologyByDay(String name, String station, String date, String which, String type) {
         List<List<String>> SQLResults = new ArrayList<>();
         String dataSource = station + "_weather_" + date.split("-")[0];
-        String startDateTime = date + " " + "00:00:00";
-        String endDateTime = date + " " + "23:00:00";
-        if (type.equals("1")) {
-            List<Meteorology> meteorologyList = dayMapper
-                    .selectMeteorologyDay(dataSource, startDateTime, endDateTime, which);
-            SQLResults = SQLResult(meteorologyList, "dateTime");
-        } else if (type.equals("2")) {
-            List<Meteorology> meteorologyList = dayChartMapper
-                    .selectMeteorologyDayToCharts(dataSource, startDateTime, endDateTime, which);
-            SQLResults = SQLResult(meteorologyList, "dateTime");
+        if (utils.checkMeteoDataExist(dataSource, date) > 0){
+            if (type.equals("1")) {
+                List<Meteorology> meteorologyList = dayMapper
+                        .selectMeteorologyDay(dataSource,
+                                String.format("%s 00:00:00",date),
+                                String.format("%s 23:59:59",date),
+                                which
+                        );
+                SQLResults = SQLResult(meteorologyList, "dateTime");
+            } else if (type.equals("2")) {
+                List<Meteorology> meteorologyList = dayChartMapper
+                        .selectMeteorologyDayToCharts(dataSource,
+                                String.format("%s 00:00:00",date),
+                                String.format("%s 23:59:59",date),
+                                which);
+                SQLResults = SQLResult(meteorologyList, "dateTime");
+            }
+            return !SQLResults.isEmpty() ?
+                    MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        }else {
+            return obtainClient.getData(name,station,date,date) ?
+                    getMeteorologyByDay(name, station, date, which, type) : MeteorologyResult.fail();
         }
-        return !SQLResults.isEmpty() ?
-                MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
     }
 
     @Override
     public MeteorologyResult getMeteorologyByDate(String station, String start_date, String end_date, String which) {
-        List<List<String>> SQLResults = new ArrayList<>();
+        List<List<String>> SQLResults;
         //如果查询日期处于同一年
         if (start_date.split("-")[0].equals(end_date.split("-")[0])) {
             String dataSource = station + "_weather_" + start_date.split("-")[0];
@@ -100,7 +116,6 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                                                    String start_pm10,
                                                    String end_pm10) {
         List<List<String>> SQLResults = new ArrayList<>();
-        List<List<String>> whichResults = new ArrayList<>();
         //如果查询日期处于同一年
         if (start_date.split("-")[0].equals(end_date.split("-")[0])) {
             String dataSource = station + "_weather_" + start_date.split("-")[0];
@@ -123,41 +138,40 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     //统一MySQL查询结果
     private List<List<String>> SQLResult(List<Meteorology> meteorologyList, String type) {
         List<List<String>> mysqlResults = new ArrayList<>();
-        for (int i = 0; i < meteorologyList.size(); i++) {
+        for (Meteorology value : meteorologyList) {
             List<String> meteorologyArray = new ArrayList<>();
-            Meteorology meteorology = meteorologyList.get(i);
-            if (type == "dateTime") {
-                if (meteorology.getDatetime() != null) {
-                    meteorologyArray.add(meteorology.getDatetime());
+            if (type.equals("dateTime")) {
+                if (value.getDatetime() != null) {
+                    meteorologyArray.add(value.getDatetime());
                 }
-            } else if (type == "date") {
-                if (meteorology.getDate() != null) {
-                    meteorologyArray.add(meteorology.getDate());
+            } else if (type.equals("date")) {
+                if (value.getDate() != null) {
+                    meteorologyArray.add(value.getDate());
                 }
             }
-            if (meteorology.getTemperature() != null) {
-                meteorologyArray.add(meteorology.getTemperature());
+            if (value.getTemperature() != null) {
+                meteorologyArray.add(value.getTemperature());
             }
-            if (meteorology.getHumidity() != null) {
-                meteorologyArray.add(meteorology.getHumidity());
+            if (value.getHumidity() != null) {
+                meteorologyArray.add(value.getHumidity());
             }
-            if (meteorology.getSpeed() != null) {
-                meteorologyArray.add(meteorology.getSpeed());
+            if (value.getSpeed() != null) {
+                meteorologyArray.add(value.getSpeed());
             }
-            if (meteorology.getDirection() != null) {
-                meteorologyArray.add(meteorology.getDirection());
+            if (value.getDirection() != null) {
+                meteorologyArray.add(value.getDirection());
             }
-            if (meteorology.getRain() != null) {
-                meteorologyArray.add(meteorology.getRain());
+            if (value.getRain() != null) {
+                meteorologyArray.add(value.getRain());
             }
-            if (meteorology.getSunlight() != null) {
-                meteorologyArray.add(meteorology.getSunlight());
+            if (value.getSunlight() != null) {
+                meteorologyArray.add(value.getSunlight());
             }
-            if (meteorology.getPm25() != null) {
-                meteorologyArray.add(meteorology.getPm25());
+            if (value.getPm25() != null) {
+                meteorologyArray.add(value.getPm25());
             }
-            if (meteorology.getPm10() != null) {
-                meteorologyArray.add(meteorology.getPm10());
+            if (value.getPm10() != null) {
+                meteorologyArray.add(value.getPm10());
             }
             mysqlResults.add(meteorologyArray);
         }

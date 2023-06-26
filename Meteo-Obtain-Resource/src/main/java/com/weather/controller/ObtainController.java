@@ -3,11 +3,14 @@ package com.weather.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.entity.message.ReqUdpMsg;
 import com.weather.listener.TaskStatusListener;
+import com.weather.mapper.SaveToMySQLMapper;
+import com.weather.repository.RedisRepository;
 import com.weather.service.UdpRequestService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
+
 
 /**
  * 此处提供了内部Http端点供服务调用
@@ -23,8 +26,10 @@ public class ObtainController {
     private final RabbitTemplate rabbitTemplate;
     private final TaskStatusListener taskStatusListener;
 
+
+    @SneakyThrows
     @GetMapping("/token/user")
-    public boolean getToken(@RequestParam String name) throws Exception {
+    public boolean getToken(@RequestParam String name){
         rabbitTemplate
                 .convertAndSend("udp-req-exchange", "udp-req-routing-key",
                         new ObjectMapper().writeValueAsString(new ReqUdpMsg("getToken", name)));
@@ -32,7 +37,7 @@ public class ObtainController {
     }
 
     @PostMapping("/token")
-    public boolean voidToken(@RequestParam String name) throws Exception {
+    public boolean voidToken(@RequestParam String name){
         return udpRequestService.voidToken(name);
     }
 

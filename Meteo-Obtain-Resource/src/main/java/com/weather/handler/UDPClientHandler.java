@@ -2,6 +2,7 @@ package com.weather.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.weather.entity.message.ResUdpMsg;
 import com.weather.handler.response.ResponseHandler;
@@ -33,7 +34,11 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
         byteBuffer.get(bytes);
         String response = new String(bytes);
         log.info("Response size: " + response.getBytes().length + " bytes");
-        JsonElement jsonRes = new Gson().fromJson(response, JsonElement.class);
+        System.out.println(response);
+        JsonElement jsonRes = new GsonBuilder()
+                .setLenient()
+                .create()
+                .fromJson(response, JsonElement.class);
         codeStatusController(jsonRes, packet);
     }
 
@@ -45,7 +50,7 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
                 rabbitTemplate
                         .convertAndSend("udp-res-exchange", "udp-res-routing-key",
                                 new ObjectMapper()
-                                        .writeValueAsString(ResUdpMsg.token(2,"root",jsonRes.getAsJsonObject().get("token").getAsString())));
+                                        .writeValueAsString(ResUdpMsg.token(2, "root", jsonRes.getAsJsonObject().get("token").getAsString())));
                 break;
             case 4:
                 log.info("Received 'Void Token' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
@@ -68,23 +73,14 @@ public class UDPClientHandler extends SimpleChannelInboundHandler<DatagramPacket
             case 10:
                 log.info("Received 'Request Meteorological Data' response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
                 System.out.println(jsonRes);
-                if (Integer.parseInt(getValue(jsonRes, "last")) == 1) {
-                    rabbitTemplate
-                            .convertAndSend("udp-res-exchange", "udp-res-routing-key",
-                                    new ObjectMapper().writeValueAsString(new ResUdpMsg(10,
-                                            getValue(jsonRes, "station"),
-                                            getValue(jsonRes, "date"),
-                                            getValue(jsonRes, "data"))));
-                    log.info("The 'last' is '1' ");
-                } else {
-                    rabbitTemplate
-                            .convertAndSend("udp-res-exchange", "udp-res-routing-key",
-                                    new ObjectMapper().writeValueAsString(new ResUdpMsg(10,
-                                            getValue(jsonRes, "station"),
-                                            getValue(jsonRes, "date"),
-                                            getValue(jsonRes, "data"))));
-                    log.info("The 'last' is '0' ");
-                }
+                rabbitTemplate
+                        .convertAndSend("udp-res-exchange", "udp-res-routing-key",
+                                new ObjectMapper().writeValueAsString(new ResUdpMsg(10,
+                                        Integer.parseInt(getValue(jsonRes, "last")),
+                                        getValue(jsonRes, "station"),
+                                        getValue(jsonRes, "date"),
+                                        getValue(jsonRes, "data"))));
+                log.info("The 'last' is " + Integer.parseInt(getValue(jsonRes, "last")));
                 break;
             default:
                 log.info("Received unknown response from " + packet.sender().getHostString() + ":" + packet.sender().getPort());
