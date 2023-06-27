@@ -11,8 +11,8 @@ public interface ComplexMeteorologyMapper {
             "SELECT datetime, temperature, humidity, speed, direction, rain, sunlight, pm25, pm10 " +
             "FROM ${datasource} " +
             "WHERE station = '${station}' " +
-            "AND DATE_FORMAT(date, '%Y-%m-%d') &gt;= '${startDate}' " +
-            "<if test=\"endDate != null\">AND DATE_FORMAT(date, '%Y-%m-%d') &lt;= '${endDate}' </if>" +
+            "AND DATE_FORMAT(datetime, '%Y-%m-%d %H:%i:00') &gt;= '${startDate}' " +
+            "<if test=\"endDate != null\">AND DATE_FORMAT(datetime, '%Y-%m-%d %H:%i:59') &lt;= '${endDate}' </if>" +
             "<if test=\"startTemperature != null\">AND temperature &gt;= '${startTemperature}' </if>" +
             "<if test=\"endTemperature != null\">AND temperature &lt;= '${endTemperature}' </if>" +
             "<if test=\"startHumidity != null\">AND humidity &gt;= '${startHumidity}' </if>" +

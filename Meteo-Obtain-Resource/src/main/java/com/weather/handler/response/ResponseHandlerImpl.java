@@ -12,6 +12,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 import java.sql.Time;
@@ -135,6 +137,9 @@ public class ResponseHandlerImpl implements ResponseHandler {
                             .toEpochSecond());
         }
         if (last == 1){
+            RedisScript<String> rdbSaveLua = new DefaultRedisScript<>(rdbLuaScript(), String.class);
+            String result = redisTemplate.execute(rdbSaveLua, Collections.singletonList(String.format("%s_data_%s", station, date)));
+            System.out.println(result);
             saveMeteoToMySQL(station, date);
         }
     }
@@ -160,16 +165,24 @@ public class ResponseHandlerImpl implements ResponseHandler {
                     Float.parseFloat(value.get(8).replace("\"", ""))
             ));
         }
-        if (
-                mapper.insertMeteoData(
-                        String.format(station + "_weather_" + date.split("-")[0]),
-                        meteoList
-                ) > 0
-        ) {
+        if (mapper.insertMeteoData(String.format(station + "_meteo_data"), meteoList) > 0) {
             rabbitTemplate
                     .convertAndSend("task-over-exchange", "task-over-routing-key",
                             new ObjectMapper().writeValueAsString(new TaskStatusMsg("saveMeteoData")));
         }
+    }
 
+    public String rdbLuaScript(){
+        return "local keys = redis.call(\"KEYS\", \"*\")\n" +
+                "local use_key = ARGV[1]\n" +
+                "for i, key in ipairs(keys) do\n" +
+                "    redis.call(\"SELECT\", 1)\n" +
+                "    if redis.call(\"EXISTS\", key) == use_key then\n" +
+                "        redis.call(\"SAVE\")\n" +
+                "        local old_filename = \"/meteo/redis/data/dump.rdb\"\n" +
+                "        local new_filename = \"/meteo/redis/data/share/\" .. use_key .. \".rdb\"\n" +
+                "        os.rename(old_filename, new_filename)\n" +
+                "    end\n" +
+                "end";
     }
 }

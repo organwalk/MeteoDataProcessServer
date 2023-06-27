@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.extension.activerecord.Model;
 
 public class Meteorology extends Model<Meteorology> {
 
-    private Integer id;//不出现在查询结果中
-    private String station;//不出现在查询结果中
-    private String date;//不出现在查询结果中
+    private Integer id;
+    private String station;
+    private String date;
     private String datetime;
-    private String time;//不出现在查询结果中
+    private String time;
     private String temperature;
     private String humidity;
     private String speed;

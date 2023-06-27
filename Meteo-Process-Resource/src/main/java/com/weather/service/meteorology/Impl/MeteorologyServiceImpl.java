@@ -2,12 +2,12 @@ package com.weather.service.meteorology.Impl;
 
 import com.weather.entity.Meteorology;
 import com.weather.mapper.MySQL.meteorology.*;
+import com.weather.mapper.Redis.RedisRepository;
 import com.weather.obtainclient.ObtainClient;
 import com.weather.service.meteorology.MeteorologyService;
 import com.weather.utils.MeteorologyResult;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.*;
 
@@ -18,108 +18,70 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     private final DayMeteorologyMapper dayMapper;
     private final DayToChartsMeteorologyMapper dayChartMapper;
     private final DateMeteorologyMapper dateMapper;
-    private final OtherYearDateMeteorologyMapper otherYearDateMapper;
     private final ComplexMeteorologyMapper complexMapper;
     private final UtilsMapper utils;
     private final ObtainClient obtainClient;
+    private final RedisRepository cache;
 
     @Override
     public MeteorologyResult getMeteorologyByHour(String name, String station, String date, String hour, String which) {
-        String dataSource = station + "_weather_" + date.split("-")[0];
-        if (utils.checkMeteoDataExist(dataSource, date) != null) {
-            List<Meteorology> meteorologyList = hourMapper
-                    .selectMeteorologyHour(dataSource,
-                            String.format("%s %s:00:00", date, hour),
-                            String.format("%s %s:00:00", date, hour),
-                            which
-                    );
-            List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
-            return !SQLResults.isEmpty() ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
-        } else {
-            return obtainClient.getData(name, station, date, date) ?
-                    getMeteorologyByHour(name, station, date, hour, which) : MeteorologyResult.fail();
+        String dataSource = station + "_meteo_data";
+        String date_hour = date + " " + hour + ":00:00";
+        String date_hour_end = date + " " + hour + ":59:59";
+//        if (utils.checkMeteoDataExist(dataSource, date) == null) {
+//            return obtainClient.getData(name, station, date, date) ?
+//                    getMeteorologyByHour(name, station, date, hour, which) : MeteorologyResult.fail();
+//        }
+        obtainClient.getData(name, station, date, date);
+        List<List<String>> cacheHourMeteo = cache.getHourMeteoCache(dataSource,date_hour,which);
+        if (!cacheHourMeteo.isEmpty()){
+            return MeteorologyResult.success(station,cacheHourMeteo);
         }
+        List<Meteorology> meteorologyList = hourMapper
+                .selectMeteorologyHour(dataSource, date_hour, date_hour_end, which);
+        List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
+        boolean cache_success = !SQLResults.isEmpty() && cache.saveHourMeteoCache(dataSource,date_hour,which,SQLResults);
+        return cache_success ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
     }
+
 
     @Override
     public MeteorologyResult getMeteorologyByDay(String name, String station, String date, String which, String type) {
-        List<List<String>> SQLResults = new ArrayList<>();
-        String dataSource = station + "_weather_" + date.split("-")[0];
-        if (utils.checkMeteoDataExist(dataSource, date) != null) {
-            if (type.equals("1")) {
-                List<Meteorology> meteorologyList = dayMapper
-                        .selectMeteorologyDay(dataSource,
-                                String.format("%s 00:00:00", date),
-                                String.format("%s 23:59:59", date),
-                                which
-                        );
-                SQLResults = SQLResult(meteorologyList, "dateTime");
-            } else if (type.equals("2")) {
-                List<Meteorology> meteorologyList = dayChartMapper
-                        .selectMeteorologyDayToCharts(dataSource,
-                                String.format("%s 00:00:00", date),
-                                String.format("%s 23:59:59", date),
-                                which);
-                SQLResults = SQLResult(meteorologyList, "dateTime");
-            }
-            return !SQLResults.isEmpty() ?
-                    MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
-        } else {
+        String dataSource = station + "_meteo_data";
+        String start = date + " 00:00:00";
+        String end = date + " 23:59:59";
+        if (utils.checkMeteoDataExist(dataSource, date) == null) {
             return obtainClient.getData(name, station, date, date) ?
                     getMeteorologyByDay(name, station, date, which, type) : MeteorologyResult.fail();
         }
+        List<List<String>> cacheDayMeteo = cache.getDayMeteoCache(dataSource, date, which, type);
+        if (!cacheDayMeteo.isEmpty()){
+            return MeteorologyResult.success(station,cacheDayMeteo);
+        }
+        List<List<String>> SQLResults = getDayMeteoSQLResult(dataSource, start, end, which, type);
+        boolean cache_success = !SQLResults.isEmpty() && cache.saveDayMeteoCache(dataSource, date, which, type, SQLResults);
+        return cache_success ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
     }
 
     @Override
     public MeteorologyResult getMeteorologyByDate(String name, String station, String startDate, String endDate, String which) {
-        List<List<String>> SQLResults = new ArrayList<>();
-        //如果查询日期处于同一年
-        if (startDate.split("-")[0].equals(endDate.split("-")[0])) {
-            String dataSource = station + "_weather_" + startDate.split("-")[0];
-            List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,startDate,endDate);
-            if (!noExistDateRangeList.isEmpty()){
-                for (List<String> noExistDateList : noExistDateRangeList){
-                    return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
-                            getMeteorologyByDate(name, station, startDate, endDate, which) : MeteorologyResult.fail();
-                }
-            }else {
-                List<Meteorology> meteorologyList;
-                if (startDate.equals(endDate)){
-                    meteorologyList = dateMapper
-                            .selectMeteorologyDate(dataSource, startDate, String.valueOf(LocalDate.parse(endDate).plusDays(1)), which);
-                }else {
-                    meteorologyList = dateMapper
-                            .selectMeteorologyDate(dataSource, startDate, endDate, which);
-                }
-                SQLResults = SQLResult(meteorologyList, "date");
-            }
-        } else {
-            //如果查询日期不处于同一年
-            String dataSourceStartDate = station + "_weather_" + startDate.split("-")[0];
-            String dataSourceEndDate = station + "_weather_" + endDate.split("-")[0];
-            List <List<String>> noExistStartDateRangeList = getNoExistDateRangeList(dataSourceStartDate,startDate,String.format("%s-12-31",startDate.split("-")[0]));
-            List <List<String>> noExistEndDateRangeList = getNoExistDateRangeList(dataSourceEndDate,String.format("%s-01-01",endDate.split("-")[0]),endDate);
-            if (!noExistStartDateRangeList.isEmpty()){
-                for (List<String> noExistStartDate : noExistStartDateRangeList){
-                    return obtainClient.getData(name,station, noExistStartDate.get(0), noExistStartDate.get(1)) ?
-                            getMeteorologyByDate(name, station, startDate, endDate, which) : MeteorologyResult.fail();
-                }
-            }else if (!noExistEndDateRangeList.isEmpty()){
-                for (List<String> noExistEndDate : noExistEndDateRangeList){
-                    return obtainClient.getData(name,station,noExistEndDate.get(0), noExistEndDate.get(1)) ?
-                            getMeteorologyByDate(name, station, startDate, endDate, which) : MeteorologyResult.fail();
-                }
-            }else {
-                List<Meteorology> meteorologyList = otherYearDateMapper
-                        .selectMeteorologyDateInOtherYear(dataSourceStartDate, dataSourceEndDate, startDate, endDate, which);
-                SQLResults = SQLResult(meteorologyList, "date");
+        String dataSource = station + "_meteo_data";
+        List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,startDate,endDate);
+        if (!noExistDateRangeList.isEmpty()){
+            for (List<String> noExistDateList : noExistDateRangeList){
+                return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
+                        getMeteorologyByDate(name, station, startDate, endDate, which) : MeteorologyResult.fail();
             }
         }
-        return !SQLResults.isEmpty() ?
-                MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        List<List<String>> cacheDateRangeMeteo = cache.getDateRangeCache(dataSource,startDate,endDate,which);
+        if (!cacheDateRangeMeteo.isEmpty()){
+            return MeteorologyResult.success(station,cacheDateRangeMeteo);
+        }
+        List<List<String>> SQLResults = getDateRangeSQLResult(dataSource, startDate, endDate, which);
+        boolean cache_success = !SQLResults.isEmpty() && cache.saveDateRangeCache(dataSource, startDate, endDate, which,SQLResults);
+        return cache_success ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
     }
 
-    //4.5 获取指定复杂查询条件的气象数据
     @Override
     public MeteorologyResult getComplexMeteorology(String name,
                                                    String station,
@@ -141,44 +103,35 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                                                    String end_pm25,
                                                    String start_pm10,
                                                    String end_pm10) {
-        List<List<String>> SQLResults = new ArrayList<>();
-        //如果查询日期处于同一年
-        if (start_date.split("-")[0].equals(end_date.split("-")[0])) {
-            String dataSource = station + "_weather_" + start_date.split("-")[0];
-            List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,start_date,end_date);
-            if (!noExistDateRangeList.isEmpty()){
-                for (List<String> noExistDateList : noExistDateRangeList){
-                    return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
-                            getComplexMeteorology(name, station, start_date, end_date,
-                                    start_temperature, end_temperature, start_humidity, end_humidity,
-                                    start_speed, end_speed, start_direction, end_direction,
-                                    start_rain, end_rain, start_sunlight, end_sunlight,
-                                    start_pm25, end_pm25, start_pm10, end_pm10) : MeteorologyResult.fail();
-                }
-            }else {
-                List<Meteorology> meteorologyList;
-                if (start_date.equals(end_date)){
-                    meteorologyList = complexMapper
-                            .selectMeteorologyComplex(dataSource,station,start_date, String.valueOf(LocalDate.parse(end_date).plusDays(1)),
-                                    start_temperature, end_temperature, start_humidity, end_humidity,
-                                    start_speed, end_speed, start_direction, end_direction,
-                                    start_rain, end_rain, start_sunlight, end_sunlight,
-                                    start_pm25, end_pm25, start_pm10, end_pm10);
-                }else {
-                    meteorologyList = complexMapper
-                            .selectMeteorologyComplex(dataSource,station,start_date, end_date,
-                                    start_temperature, end_temperature, start_humidity, end_humidity,
-                                    start_speed, end_speed, start_direction, end_direction,
-                                    start_rain, end_rain, start_sunlight, end_sunlight,
-                                    start_pm25, end_pm25, start_pm10, end_pm10);
-                }
-                SQLResults = SQLResult(meteorologyList, "date");
+        String dataSource = station + "_meteo_data";
+        List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,start_date,end_date);
+        if (!noExistDateRangeList.isEmpty()){
+            for (List<String> noExistDateList : noExistDateRangeList){
+                return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
+                        getComplexMeteorology(name, station, start_date, end_date,
+                                start_temperature, end_temperature, start_humidity, end_humidity,
+                                start_speed, end_speed, start_direction, end_direction,
+                                start_rain, end_rain, start_sunlight, end_sunlight,
+                                start_pm25, end_pm25, start_pm10, end_pm10) : MeteorologyResult.fail();
             }
         }
+        String start = start_date + " " + "00:00:00";
+        String end = end_date + " " + "23:59:59";
+        List<Meteorology> meteorologyList = complexMapper
+                .selectMeteorologyComplex(dataSource,station,start, end,
+                        start_temperature, end_temperature, start_humidity, end_humidity,
+                        start_speed, end_speed, start_direction, end_direction,
+                        start_rain, end_rain, start_sunlight, end_sunlight,
+                        start_pm25, end_pm25, start_pm10, end_pm10);
+        List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
         return !SQLResults.isEmpty() ?
                 MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
     }
 
+
+
+
+    /*----------业务实现类的工具方法区，无需维护-------------------*/
     /**
      * 匹配需要获取数据的日期范围
      * 有startDate和endDate日期范围，遍历此范围
@@ -215,6 +168,30 @@ public class MeteorologyServiceImpl implements MeteorologyService {
             allDates.add(new ArrayList<>(notExistDate));
         }
         return allDates;
+    }
+
+    private List<List<String>> getDayMeteoSQLResult(String dataSource, String start, String end, String which, String type){
+        List<Meteorology> meteorologyList = Collections.emptyList();
+        if (type.equals("1")) {
+            meteorologyList = dayMapper
+                    .selectMeteorologyDay(dataSource, start, end, which);
+        } else if (type.equals("2")) {
+            meteorologyList = dayChartMapper
+                    .selectMeteorologyDayToCharts(dataSource, start, end, which);
+        }
+        return SQLResult(meteorologyList, "dateTime");
+    }
+
+    private List<List<String>> getDateRangeSQLResult(String dataSource, String startDate, String endDate, String which){
+        List<Meteorology> meteorologyList;
+        if (startDate.equals(endDate)){
+            meteorologyList = dateMapper
+                    .selectMeteorologyDate(dataSource, startDate, String.valueOf(LocalDate.parse(endDate).plusDays(1)), which);
+        }else {
+            meteorologyList = dateMapper
+                    .selectMeteorologyDate(dataSource, startDate, endDate, which);
+        }
+        return SQLResult(meteorologyList,"date");
     }
 
     //统一MySQL查询结果

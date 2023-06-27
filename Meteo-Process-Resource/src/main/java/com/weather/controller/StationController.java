@@ -15,9 +15,9 @@ public class StationController {
     @GetMapping("/stations")
     public Result getStationInfo(@RequestParam(name = "station", required = false) String station,
                                  @RequestHeader(name = "name") String authorization){
-        return station == null
-                ? stationService.getStationInfo(authorization)
-                : stationService.getStationDateByStationId(station,authorization);
+        return station == null ?
+                stationService.getStationInfo(authorization) :
+                stationService.getStationDateByStationId(station,authorization);
     }
 
     @GetMapping("/collection_year")
