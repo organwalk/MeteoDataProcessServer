@@ -7,12 +7,19 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
+import java.time.Duration;
+
 @Configuration
 public class ObtainClientConfig {
     @Bean
     public ObtainClient obtainClient(){
         WebClient client = WebClient.builder().build();
-        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builder(WebClientAdapter.forClient(client)).build();
+        HttpServiceProxyFactory factory = HttpServiceProxyFactory
+                .builder(
+                        WebClientAdapter
+                                .forClient(client)).blockTimeout(Duration.ofSeconds(60)
+                )
+                .build();
         return factory.createClient(ObtainClient.class);
     }
 }

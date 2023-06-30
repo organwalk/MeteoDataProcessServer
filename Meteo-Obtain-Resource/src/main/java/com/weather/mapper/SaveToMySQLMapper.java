@@ -3,6 +3,7 @@ import com.weather.entity.table.MeteoData;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -27,4 +28,7 @@ public interface SaveToMySQLMapper {
             "</foreach>" +
             "</script>")
     int insertMeteoData(@Param("tableName") String tableName, @Param("meteoDataList") List<MeteoData> meteoDataList);
+
+    @Select("select date from ${tableName} where date=#{date} LIMIT 1")
+    String checkMeteoDataExist(@Param("tableName") String tableName, @Param("date")String date);
 }

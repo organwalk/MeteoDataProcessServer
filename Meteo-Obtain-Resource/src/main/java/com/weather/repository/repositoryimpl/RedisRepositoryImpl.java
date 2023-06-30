@@ -36,8 +36,9 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @Override
     public Set getMeteoData(String station, String date) {
+        String key = station + "_data_" + date;
         ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
-        Set<ZSetOperations.TypedTuple<String>> data = zSetOps.rangeWithScores(station + "_data_" + date, 0, -1);
+        Set<ZSetOperations.TypedTuple<String>> data = zSetOps.rangeWithScores(key, 0, -1);
         return data;
     }
 }

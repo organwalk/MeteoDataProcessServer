@@ -12,7 +12,7 @@ public class MeteoData {
     @TableId(type = IdType.AUTO)
     private Integer id;
     private String station;
-    private String date;
+    private Date date;
     private Date datetime;
     private Time time;
     private Float temperature;
@@ -24,7 +24,7 @@ public class MeteoData {
     private Float pm25;
     private Float pm10;
 
-    public MeteoData(String station, String date, Date datetime, Time time, Float temperature, Float humidity, Float speed, Float direction, Float rain, Float sunlight, Float pm25, Float pm10) {
+    public MeteoData(String station, Date date, Date datetime, Time time, Float temperature, Float humidity, Float speed, Float direction, Float rain, Float sunlight, Float pm25, Float pm10) {
         this.station = station;
         this.date = date;
         this.datetime = datetime;

@@ -1,14 +1,11 @@
 package com.weather.handler.response;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.weather.entity.message.TaskStatusMsg;
 import com.weather.entity.table.MeteoData;
 import com.weather.mapper.SaveToMySQLMapper;
 import com.weather.repository.RedisRepository;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -17,6 +14,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -29,7 +27,6 @@ import java.util.*;
 public class ResponseHandlerImpl implements ResponseHandler {
     private final RedisTemplate<String, String> redisTemplate;
     private final SaveToMySQLMapper mapper;
-    private final RabbitTemplate rabbitTemplate;
     private final RedisRepository repository;
 
     @SneakyThrows
@@ -39,9 +36,6 @@ public class ResponseHandlerImpl implements ResponseHandler {
         redisTemplate.opsForHash().put(key, username, token);
         String savedToken = (String) redisTemplate.opsForHash().get(key, username);
         log.info("Token saved to Redis: " + savedToken);
-        rabbitTemplate
-                .convertAndSend("task-over-exchange", "task-over-routing-key",
-                        new ObjectMapper().writeValueAsString(new TaskStatusMsg("saveToken")));
     }
 
     @Override
@@ -85,9 +79,6 @@ public class ResponseHandlerImpl implements ResponseHandler {
             }
         }
         log.info("The stationCode has been successfully saved to Redis");
-        rabbitTemplate
-                .convertAndSend("task-over-exchange", "task-over-routing-key",
-                        new ObjectMapper().writeValueAsString(new TaskStatusMsg("saveStationCode")));
     }
 
     @SneakyThrows
@@ -105,9 +96,6 @@ public class ResponseHandlerImpl implements ResponseHandler {
             mapper.insertStationDateRange(date, d_station);
         }
         log.info("The MeteoDateRange has been successfully saved to Redis");
-        rabbitTemplate
-                .convertAndSend("task-over-exchange", "task-over-routing-key",
-                        new ObjectMapper().writeValueAsString(new TaskStatusMsg("saveDateRange")));
     }
 
 
@@ -126,9 +114,9 @@ public class ResponseHandlerImpl implements ResponseHandler {
             }
         }
         ZSetOperations<String, String> ops = redisTemplate.opsForZSet();
+        String key = station + "_data_" + date.replace("\"", "");
         for (int i = 0; i < dataList.size(); i++) {
-            ops.add(String.format("%s_data_%s", station, date),
-                    dataList.get(i).toString(),
+            ops.add(key, dataList.get(i).toString(),
                     ZonedDateTime.of(
                                     LocalDateTime
                                             .parse(date.substring(1, 11) + " " + dataList.get(i).get(0).substring(1, 9),
@@ -138,21 +126,21 @@ public class ResponseHandlerImpl implements ResponseHandler {
         }
         if (last == 1){
             RedisScript<String> rdbSaveLua = new DefaultRedisScript<>(rdbLuaScript(), String.class);
-            String result = redisTemplate.execute(rdbSaveLua, Collections.singletonList(String.format("%s_data_%s", station, date)));
-            System.out.println(result);
+            redisTemplate.execute(rdbSaveLua, Collections.singletonList(key));
             saveMeteoToMySQL(station, date);
         }
     }
 
     @SneakyThrows
     public void saveMeteoToMySQL(String station, String date) {
-        Set<ZSetOperations.TypedTuple<String>> meteo = repository.getMeteoData(station, date);
+        Set<ZSetOperations.TypedTuple<String>> meteo = repository.getMeteoData(station, date.replace("\"", ""));
         List<MeteoData> meteoList = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for (ZSetOperations.TypedTuple<String> tuple : meteo) {
             List<String> value = Arrays.asList(tuple.getValue().replaceAll("\\[|\\]", "").split(","));
             meteoList.add(new MeteoData(
                     station,
-                    date,
+                    sdf.parse(date.replace("\"", "")),
                     new Date((long) (tuple.getScore() * 1000)),
                     Time.valueOf(value.get(0).replace("\"", "")),
                     Float.parseFloat(value.get(1).replace("\"", "")),
@@ -165,11 +153,7 @@ public class ResponseHandlerImpl implements ResponseHandler {
                     Float.parseFloat(value.get(8).replace("\"", ""))
             ));
         }
-        if (mapper.insertMeteoData(String.format(station + "_meteo_data"), meteoList) > 0) {
-            rabbitTemplate
-                    .convertAndSend("task-over-exchange", "task-over-routing-key",
-                            new ObjectMapper().writeValueAsString(new TaskStatusMsg("saveMeteoData")));
-        }
+        mapper.insertMeteoData(String.format(station + "_meteo_data"), meteoList);
     }
 
     public String rdbLuaScript(){

@@ -7,6 +7,7 @@ import com.weather.obtainclient.ObtainClient;
 import com.weather.service.meteorology.MeteorologyService;
 import com.weather.utils.MeteorologyResult;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
@@ -23,16 +24,17 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     private final ObtainClient obtainClient;
     private final RedisRepository cache;
 
+    @SneakyThrows
     @Override
     public MeteorologyResult getMeteorologyByHour(String name, String station, String date, String hour, String which) {
         String dataSource = station + "_meteo_data";
         String date_hour = date + " " + hour + ":00:00";
         String date_hour_end = date + " " + hour + ":59:59";
-//        if (utils.checkMeteoDataExist(dataSource, date) == null) {
-//            return obtainClient.getData(name, station, date, date) ?
-//                    getMeteorologyByHour(name, station, date, hour, which) : MeteorologyResult.fail();
-//        }
-        obtainClient.getData(name, station, date, date);
+        if (utils.checkMeteoDataExist(dataSource, date) == null) {
+            return obtainClient.getData(name, station, date, date) ?
+                    getMeteorologyByHour(name, station, date, hour, which) : MeteorologyResult.fail();
+        }
+//        obtainClient.getData(name, station, date, date);
         List<List<String>> cacheHourMeteo = cache.getHourMeteoCache(dataSource,date_hour,which);
         if (!cacheHourMeteo.isEmpty()){
             return MeteorologyResult.success(station,cacheHourMeteo);

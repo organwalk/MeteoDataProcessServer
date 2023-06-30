@@ -1,24 +1,24 @@
 server:
   port: 9494
-#udp:
-#  remote:
-#    host: 127.0.0.1
-#    port: 9092
 udp:
   remote:
-    host: 81.71.161.47
-    port: 39092
+    host: 192.168.1.132
+    port: 9092
+#udp:
+#  remote:
+#    host: 81.71.161.47
+#    port: 39092
 spring:
   application:
     name: meteo-obtain-resource
-  rabbitmq:
-    host: 81.71.161.47
-    port: 35672
-    username: guest
-    password: guest
-    listener:
-      simple:
-        message-converter: json
+#  rabbitmq:
+#    host: 192.168.1.132
+#    port: 5672
+#    username: guest
+#    password: guest
+#    listener:
+#      simple:
+#        message-converter: json
 #  data:
 #    redis:
 #      database: 15

@@ -1,12 +1,10 @@
 package com.weather.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.weather.entity.message.ReqUdpMsg;
-import com.weather.listener.TaskStatusListener;
+import com.weather.mapper.SaveToMySQLMapper;
+import com.weather.repository.RedisRepository;
 import com.weather.service.UdpRequestService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -21,17 +19,13 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class ObtainController {
     private final UdpRequestService udpRequestService;
-    private final RabbitTemplate rabbitTemplate;
-    private final TaskStatusListener taskStatusListener;
+    private final RedisRepository repository;
+    private final SaveToMySQLMapper mapper;
 
-
-    @SneakyThrows
     @GetMapping("/token/user")
     public boolean getToken(@RequestParam String name){
-        rabbitTemplate
-                .convertAndSend("udp-req-exchange", "udp-req-routing-key",
-                        new ObjectMapper().writeValueAsString(new ReqUdpMsg("getToken", name)));
-        return nowTaskStatus();
+        udpRequestService.getToken(name);
+        return nowGetTokenStatus(name);
     }
 
     @PostMapping("/token")
@@ -39,41 +33,49 @@ public class ObtainController {
         return udpRequestService.voidToken(name);
     }
 
-    @SneakyThrows
     @GetMapping("/meteo/station")
     public boolean getStationCode(@RequestParam String name) {
-        rabbitTemplate
-                .convertAndSend("udp-req-exchange", "udp-req-routing-key",
-                        new ObjectMapper().writeValueAsString(new ReqUdpMsg("stationCode", name)));
-        return nowTaskStatus();
+        udpRequestService.getAllStationCode(name);
+        return nowGetStationCodeStatus("allStationCode:station&name");
     }
 
-    @SneakyThrows
     @GetMapping("/meteo/date_range")
     public boolean getDateRange(@RequestParam String name, String station) {
-        rabbitTemplate
-                .convertAndSend("udp-req-exchange", "udp-req-routing-key",
-                        new ObjectMapper().writeValueAsString(new ReqUdpMsg("dateRange", name, station)));
-        return nowTaskStatus();
+        return udpRequestService.getAllStationDataRange(name,station);
     }
 
-    @SneakyThrows
     @GetMapping("/meteo/data")
     public boolean getMeteoData(@RequestParam String name,
                                 @RequestParam String station,
                                 @RequestParam String start,
                                 @RequestParam String end) {
-        rabbitTemplate
-                .convertAndSend("udp-req-exchange", "udp-req-routing-key",
-                        new ObjectMapper().writeValueAsString(new ReqUdpMsg("meteoData", name, station, start, end)));
-        return nowTaskStatus();
+        udpRequestService.getMeteoData(name, station, start, end);
+        return nowGetMeteoData(station+"_meteo_data",start);
     }
 
     @SneakyThrows
-    public Boolean nowTaskStatus() {
-        while (!taskStatusListener.isTaskOver()) {
-            Thread.sleep(100);
+    public Boolean nowGetTokenStatus(String name) {
+        while (repository.getToken(name) == "") {
+            Thread.sleep(1000);
         }
-        return taskStatusListener.isTaskOver();
+        return true;
     }
+
+    @SneakyThrows
+    public Boolean nowGetStationCodeStatus(String key){
+        while (repository.getAllStationCode(key) == ""){
+            Thread.sleep(1000);
+        }
+        return true;
+    }
+
+    @SneakyThrows
+    public Boolean nowGetMeteoData(String table, String date){
+        while (mapper.checkMeteoDataExist(table,date) == null){
+            Thread.sleep(3000);
+        }
+        return true;
+    }
+
+
 }
