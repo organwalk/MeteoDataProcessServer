@@ -4,9 +4,9 @@ import com.weather.utils.MeteorologyResult;
 
 public interface MeteorologyService {
 
-    MeteorologyResult getMeteorologyByHour(String name, String station,String date,String hour,String which);
+    MeteorologyResult getMeteorologyByHour(String name, String station,String date,String hour,String which,int pageSize, int offset);
     MeteorologyResult getMeteorologyByDay(String name,String station,String date,String which,String type);
-    MeteorologyResult getMeteorologyByDate(String name,String station,String start_date,String end_date,String which);
+    MeteorologyResult getMeteorologyByDate(String name,String station,String start_date,String end_date,String which,int pageSize, int offset);
     MeteorologyResult getComplexMeteorology(String name,
                                             String station,
                                             String start_date,
@@ -26,6 +26,6 @@ public interface MeteorologyService {
                                             String start_pm25,
                                             String end_pm25,
                                             String start_pm10,
-                                            String end_pm10);
+                                            String end_pm10,int pageSize,int offset);
 
 }

@@ -28,7 +28,7 @@ public interface ComplexMeteorologyMapper {
             "<if test=\"startPm25 != null\">AND pm25 &gt;= '${startPm25}' </if>" +
             "<if test=\"endPm25 != null\">AND pm25 &lt;= '${endPm25}' </if>" +
             "<if test=\"startPm10 != null\">AND pm10 &gt;= '${startPm10}' </if>" +
-            "<if test=\"endPm10 != null\">AND pm10 &lt;= '${endPm10}' </if>" +
+            "<if test=\"endPm10 != null\">AND pm10 &lt;= '${endPm10}' </if> limit #{pageSize} offset #{offset}" +
             "</script>")
     @Results(value =
             {
@@ -63,6 +63,7 @@ public interface ComplexMeteorologyMapper {
             @Param("startPm25") String startPm25,
             @Param("endPm25") String endPm25,
             @Param("startPm10") String startPm10,
-            @Param("endPm10") String endPm10
+            @Param("endPm10") String endPm10,
+            @Param("pageSize") int pageSize, @Param("offset") int offset
     );
 }

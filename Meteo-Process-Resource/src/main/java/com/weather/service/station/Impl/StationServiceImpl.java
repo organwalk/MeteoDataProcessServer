@@ -28,25 +28,38 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public StationResult getStationInfo(String authorization) {
-        return obtainClient.getStationCode(authorization) ?
-                StationResult.success(stationMapper
-                        .selectMaps(new QueryWrapper<Station>()
-                                .select("station", "name"))) : StationResult.fail();
+//        return obtainClient.getStationCode(authorization) ?
+//                StationResult.success(stationMapper
+//                        .selectMaps(new QueryWrapper<Station>()
+//                                .select("station", "name"))) : StationResult.fail();
+        return StationResult.success(stationMapper
+                .selectMaps(new QueryWrapper<Station>()
+                        .select("station", "name")));
     }
 
     @Override
     public StationDateResult getStationDateByStationId(String station, String authorization) {
-        return obtainClient.getDateRange(authorization,station) ?
-                StationDateResult.success(stationDateMapper
-                        .selectMaps(Wrappers.<StationDate>query()
-                                .eq("station", station)
-                                .select("date"))
-                        .stream()
-                        .map(map -> map.get("date").toString())
-                        .map(LocalDate::parse)
-                        .sorted(Comparator.naturalOrder())
-                        .map(LocalDate::toString)
-                        .collect(Collectors.toList())) : StationDateResult.fail();
+//        return obtainClient.getDateRange(authorization,station) ?
+//                StationDateResult.success(stationDateMapper
+//                        .selectMaps(Wrappers.<StationDate>query()
+//                                .eq("station", station)
+//                                .select("date"))
+//                        .stream()
+//                        .map(map -> map.get("date").toString())
+//                        .map(LocalDate::parse)
+//                        .sorted(Comparator.naturalOrder())
+//                        .map(LocalDate::toString)
+//                        .collect(Collectors.toList())) : StationDateResult.fail();
+        return StationDateResult.success(stationDateMapper
+                .selectMaps(Wrappers.<StationDate>query()
+                        .eq("station", station)
+                        .select("date"))
+                .stream()
+                .map(map -> map.get("date").toString())
+                .map(LocalDate::parse)
+                .sorted(Comparator.naturalOrder())
+                .map(LocalDate::toString)
+                .collect(Collectors.toList()));
     }
 
     @Override

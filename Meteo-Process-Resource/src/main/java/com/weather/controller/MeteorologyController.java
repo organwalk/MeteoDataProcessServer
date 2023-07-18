@@ -18,8 +18,10 @@ public class MeteorologyController {
                                                   @RequestParam String date,
                                                   @RequestParam String hour,
                                                   @RequestParam String which,
+                                                  @RequestParam int pageSize,
+                                                  @RequestParam int offset,
                                                   @RequestHeader(name = "name") String authorization){
-        return meteorologyService.getMeteorologyByHour(authorization,station,date,hour,which);
+        return meteorologyService.getMeteorologyByHour(authorization,station,date,hour,which,pageSize,offset);
     }
     @PostMapping("/stat_day")
     public MeteorologyResult getMeteorologyByDay(@RequestParam String station,
@@ -34,8 +36,10 @@ public class MeteorologyController {
                                                  @RequestParam String start_date,
                                                  @RequestParam String end_date,
                                                  @RequestParam String which,
+                                                 @RequestParam int pageSize,
+                                                 @RequestParam int offset,
                                                  @RequestHeader(name = "name") String authorization){
-        return meteorologyService.getMeteorologyByDate(authorization,station,start_date,end_date,which);
+        return meteorologyService.getMeteorologyByDate(authorization,station,start_date,end_date,which,pageSize,offset);
     }
     @PostMapping("/query")
     public MeteorologyResult getComplexMeteorology(@RequestParam String station,
@@ -57,6 +61,8 @@ public class MeteorologyController {
                                                    @RequestParam(required = false) String end_pm25,
                                                    @RequestParam(required = false) String start_pm10,
                                                    @RequestParam(required = false) String end_pm10,
+                                                   @RequestParam int pageSize,
+                                                   @RequestParam int offset,
                                                    @RequestHeader(name = "name") String authorization){
         return meteorologyService.getComplexMeteorology(authorization,
                                                         station,
@@ -77,6 +83,6 @@ public class MeteorologyController {
                                                         start_pm25,
                                                         end_pm25,
                                                         start_pm10,
-                                                        end_pm10);
+                                                        end_pm10,pageSize,offset);
     }
 }

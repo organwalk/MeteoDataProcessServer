@@ -19,7 +19,7 @@ public interface DayMeteorologyMapper {
             "<if test=\"which.contains('8'.toString())\">, ROUND(AVG(COALESCE(pm10, 0)), 2) AS pm10</if> " +
             "FROM ${datasource} " +
             "WHERE dateTime &gt;= #{startDateTime} AND dateTime &lt; #{endDateTime} " +
-            "GROUP BY DATE_FORMAT(dateTime, '%Y-%m-%d %H:00:00')" +
+            "GROUP BY DATE_FORMAT(dateTime, '%Y-%m-%d %H:00:00') " +
             "</script>")
     @Results(value =
             {

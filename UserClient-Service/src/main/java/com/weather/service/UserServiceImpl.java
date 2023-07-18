@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService{
         if ( username != null){
             String token = bCryptPasswordEncoder.encode(username) + UUID.randomUUID();
             userRedis.saveToken(username,token);
-            obtainClient.getToken(username);
+//            obtainClient.getToken(username);
             return bCryptPasswordEncoder
                     .matches(loginRequest.getPassword(),
                             userMapper.getEncryptedPassword(username))
@@ -47,8 +47,8 @@ public class UserServiceImpl implements UserService{
     @Override
     public Result logout(String username) {
         userRedis.voidAccessToken(username);
-        return obtainClient.voidToken(username)
-                ? Result.success(true) : Result.fail();
+//        obtainClient.voidToken(username)
+        return Result.success(true);
     }
 
     @Override

@@ -18,7 +18,7 @@ public interface HourMeteorologyMapper {
             "<if test=\"which.contains('7'.toString())\">, pm25</if>" +
             "<if test=\"which.contains('8'.toString())\">, pm10</if>" +
             " FROM ${datasource} WHERE DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:00') &gt;= '${startDateTime}' " +
-            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:59') &lt;= '${endDateTime}' " +
+            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:59') &lt;= '${endDateTime}' limit #{pageSize} offset #{offset}" +
             "</script>")
     @Results(value =
                     {
@@ -36,5 +36,5 @@ public interface HourMeteorologyMapper {
     List<Meteorology> selectMeteorologyHour(@Param("datasource") String datasource,
                                             @Param("startDateTime") String startDateTime,
                                             @Param("endDateTime") String endDateTime,
-                                            @Param("which") String which);
+                                            @Param("which") String which,@Param("pageSize") int pageSize, @Param("offset") int offset);
 }

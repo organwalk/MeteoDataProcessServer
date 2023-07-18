@@ -18,9 +18,9 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @SneakyThrows
     @Override
-    public Boolean saveHourMeteoCache(String dataSource, String date_hour, String which, List<List<String>> meteoData) {
+    public Boolean saveHourMeteoCache(String dataSource, String date_hour, String which, int pageSize,int offset,List<List<String>> meteoData) {
         redisTemplate.opsForHash().put(dataSource,
-                date_hour + "_" + which,
+                date_hour + "_" + which + "_" + pageSize + "_" + offset,
                 new ObjectMapper().writeValueAsString(meteoData)
         );
         return true;
@@ -28,8 +28,8 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @SneakyThrows
     @Override
-    public List<List<String>> getHourMeteoCache(String dataSource, String date_hour, String which) {
-        String strMeteo = (String) redisTemplate.opsForHash().get(dataSource,date_hour + "_" + which);
+    public List<List<String>> getHourMeteoCache(String dataSource, String date_hour, String which, int pageSize,int offset) {
+        String strMeteo = (String) redisTemplate.opsForHash().get(dataSource,date_hour + "_" + which + "_" + pageSize + "_" + offset);
         return  strMeteo != null ?
                 new ObjectMapper().readValue(strMeteo, new TypeReference<>() {}) : new ArrayList<>();
     }
@@ -54,9 +54,9 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @SneakyThrows
     @Override
-    public Boolean saveDateRangeCache(String dataSource, String start, String end, String which, List<List<String>> meteoData) {
+    public Boolean saveDateRangeCache(String dataSource, String start, String end, String which, int pageSize,int offset,List<List<String>> meteoData) {
         redisTemplate.opsForHash().put(dataSource,
-                start + "_" + end + "_" + which,
+                start + "_" + end + "_" + which + "_" + pageSize + "_" + offset,
                 new ObjectMapper().writeValueAsString(meteoData)
         );
         return true;
@@ -64,8 +64,8 @@ public class RedisRepositoryImpl implements RedisRepository {
 
     @SneakyThrows
     @Override
-    public List<List<String>> getDateRangeCache(String dataSource, String start, String end, String which) {
-        String strMeteo = (String) redisTemplate.opsForHash().get(dataSource,start + "_" + end + "_" + which);
+    public List<List<String>> getDateRangeCache(String dataSource, String start, String end, String which, int pageSize,int offset) {
+        String strMeteo = (String) redisTemplate.opsForHash().get(dataSource,start + "_" + end + "_" + which + "_" + pageSize + "_" + offset);
         return strMeteo != null ?
                 new ObjectMapper().readValue(strMeteo, new TypeReference<>() {}) : new ArrayList<>();
     }

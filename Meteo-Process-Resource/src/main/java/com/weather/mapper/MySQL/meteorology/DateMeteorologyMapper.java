@@ -19,7 +19,7 @@ public interface DateMeteorologyMapper {
             "<if test=\"which.contains('8'.toString())\">, ROUND(AVG(COALESCE(pm10, 0)), 2) AS pm10</if> " +
             "FROM ${datasource} " +
             "WHERE date &gt;= #{startDateTime} AND date &lt; #{endDateTime} " +
-            "GROUP BY date" +
+            "GROUP BY date limit #{pageSize} offset #{offset}" +
             "</script>")
     @Results(value =
             {
@@ -36,5 +36,5 @@ public interface DateMeteorologyMapper {
     List<Meteorology> selectMeteorologyDate(@Param("datasource") String datasource,
                                             @Param("startDateTime") String startDateTime,
                                             @Param("endDateTime") String endDateTime,
-                                            @Param("which") String which);
+                                            @Param("which") String which,@Param("pageSize") int pageSize, @Param("offset") int offset);
 }
