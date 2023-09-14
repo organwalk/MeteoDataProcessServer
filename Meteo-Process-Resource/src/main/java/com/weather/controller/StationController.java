@@ -1,6 +1,7 @@
 package com.weather.controller;
 
 import com.weather.service.station.StationService;
+import com.weather.utils.MeteorologyResult;
 import com.weather.utils.Result;
 import com.weather.utils.StationDateResult;
 import lombok.AllArgsConstructor;
@@ -39,7 +40,7 @@ public class StationController {
     }
 
     @GetMapping("/data_sum")
-    public StationDateResult getDataSumByMonth(@RequestParam String station,
+    public MeteorologyResult getDataSumByMonth(@RequestParam String station,
                                                @RequestParam String year,
                                                @RequestParam String month){
         return stationService.getStationDataSum(station,year,month);

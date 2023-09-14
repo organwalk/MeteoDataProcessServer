@@ -18,8 +18,7 @@ public class AuthenticationFilter implements GatewayFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String name = exchange.getRequest().getHeaders().getFirst("name");
         String accessToken = exchange.getRequest().getHeaders().getFirst("access_token");
-        String checkToken = userClient.checkAccessToken(name);
-        if (accessToken != null && accessToken.equals(checkToken)) {
+        if (accessToken != null && name != null && accessToken.equals(userClient.checkAccessToken(name))) {
             return chain.filter(exchange);
         } else {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);

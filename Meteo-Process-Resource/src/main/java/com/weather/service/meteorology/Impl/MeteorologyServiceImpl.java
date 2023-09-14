@@ -32,18 +32,19 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         String date_hour_end = date + " " + hour + ":59:59";
 //        if (utils.checkMeteoDataExist(dataSource, date) == null) {
 //            return obtainClient.getData(name, station, date, date) ?
-//                    getMeteorologyByHour(name, station, date, hour, which) : MeteorologyResult.fail();
+//                    getMeteorologyByHour(name, station, date, hour, which,pageSize,offset) : MeteorologyResult.fail();
 //        }
 //        obtainClient.getData(name, station, date, date);
         List<List<String>> cacheHourMeteo = cache.getHourMeteoCache(dataSource,date_hour,which,pageSize,offset);
+        int total = hourMapper.selectMeteorologyHourCount(dataSource,date_hour,date_hour_end);
         if (!cacheHourMeteo.isEmpty()){
-            return MeteorologyResult.success(station,cacheHourMeteo);
+            return MeteorologyResult.success(station,total,cacheHourMeteo);
         }
         List<Meteorology> meteorologyList = hourMapper
                 .selectMeteorologyHour(dataSource, date_hour, date_hour_end, which,pageSize,offset);
         List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
         boolean cache_success = !SQLResults.isEmpty() && cache.saveHourMeteoCache(dataSource,date_hour,which,pageSize,offset,SQLResults);
-        return cache_success ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        return cache_success ? MeteorologyResult.success(station, total, SQLResults) : MeteorologyResult.fail();
     }
 
 
@@ -58,11 +59,11 @@ public class MeteorologyServiceImpl implements MeteorologyService {
 //        }
         List<List<String>> cacheDayMeteo = cache.getDayMeteoCache(dataSource, date, which, type);
         if (!cacheDayMeteo.isEmpty()){
-            return MeteorologyResult.success(station,cacheDayMeteo);
+            return MeteorologyResult.success(station,0,cacheDayMeteo);
         }
         List<List<String>> SQLResults = getDayMeteoSQLResult(dataSource, start, end, which, type);
         boolean cache_success = !SQLResults.isEmpty() && cache.saveDayMeteoCache(dataSource, date, which, type, SQLResults);
-        return cache_success ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        return cache_success ? MeteorologyResult.success(station, 0,SQLResults) : MeteorologyResult.fail();
     }
 
     @Override
@@ -72,16 +73,18 @@ public class MeteorologyServiceImpl implements MeteorologyService {
 //        if (!noExistDateRangeList.isEmpty()){
 //            for (List<String> noExistDateList : noExistDateRangeList){
 //                return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
-//                        getMeteorologyByDate(name, station, startDate, endDate, which) : MeteorologyResult.fail();
+//                        getMeteorologyByDate(name, station, startDate, endDate, which,pageSize,offset) : MeteorologyResult.fail();
 //            }
 //        }
         List<List<String>> cacheDateRangeMeteo = cache.getDateRangeCache(dataSource,startDate,endDate,which,pageSize,offset);
+        int total = dateMapper.selectMeteorologyDateCount(dataSource,startDate,endDate,which);
         if (!cacheDateRangeMeteo.isEmpty()){
-            return MeteorologyResult.success(station,cacheDateRangeMeteo);
+            return MeteorologyResult.success(station,total,cacheDateRangeMeteo);
         }
+
         List<List<String>> SQLResults = getDateRangeSQLResult(dataSource, startDate, endDate, which,pageSize,offset);
         boolean cache_success = !SQLResults.isEmpty() && cache.saveDateRangeCache(dataSource, startDate, endDate, which,pageSize,offset,SQLResults);
-        return cache_success ? MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+        return cache_success ? MeteorologyResult.success(station, total,SQLResults) : MeteorologyResult.fail();
     }
 
     @Override
@@ -106,6 +109,13 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                                                    String start_pm10,
                                                    String end_pm10,int pageSize,int offset) {
         String dataSource = station + "_meteo_data";
+        String start = start_date + " " + "00:00:00";
+        String end = end_date + " " + "23:59:59";
+        int total = complexMapper.selectMeteorologyComplexCount(dataSource,station,start, end,
+                start_temperature, end_temperature, start_humidity, end_humidity,
+                start_speed, end_speed, start_direction, end_direction,
+                start_rain, end_rain, start_sunlight, end_sunlight,
+                start_pm25, end_pm25, start_pm10, end_pm10);
 //        List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,start_date,end_date);
 //        if (!noExistDateRangeList.isEmpty()){
 //            for (List<String> noExistDateList : noExistDateRangeList){
@@ -114,11 +124,9 @@ public class MeteorologyServiceImpl implements MeteorologyService {
 //                                start_temperature, end_temperature, start_humidity, end_humidity,
 //                                start_speed, end_speed, start_direction, end_direction,
 //                                start_rain, end_rain, start_sunlight, end_sunlight,
-//                                start_pm25, end_pm25, start_pm10, end_pm10) : MeteorologyResult.fail();
+//                                start_pm25, end_pm25, start_pm10, end_pm10,pageSize,offset) : MeteorologyResult.fail();
 //            }
 //        }
-        String start = start_date + " " + "00:00:00";
-        String end = end_date + " " + "23:59:59";
         List<Meteorology> meteorologyList = complexMapper
                 .selectMeteorologyComplex(dataSource,station,start, end,
                         start_temperature, end_temperature, start_humidity, end_humidity,
@@ -127,7 +135,7 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                         start_pm25, end_pm25, start_pm10, end_pm10,pageSize,offset);
         List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
         return !SQLResults.isEmpty() ?
-                MeteorologyResult.success(station, SQLResults) : MeteorologyResult.fail();
+                MeteorologyResult.success(station, total, SQLResults) : MeteorologyResult.fail();
     }
 
 

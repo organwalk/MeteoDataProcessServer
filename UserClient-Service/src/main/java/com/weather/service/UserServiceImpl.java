@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public Result logout(String username) {
         userRedis.voidAccessToken(username);
-//        obtainClient.voidToken(username)
+//        obtainClient.voidToken(username);
         return Result.success(true);
     }
 

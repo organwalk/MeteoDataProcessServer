@@ -8,6 +8,7 @@ import com.weather.mapper.MySQL.station.StationDateMapper;
 import com.weather.mapper.MySQL.station.StationMapper;
 import com.weather.obtainclient.ObtainClient;
 import com.weather.service.station.StationService;
+import com.weather.utils.MeteorologyResult;
 import com.weather.utils.StationDateResult;
 import com.weather.utils.StationResult;
 import lombok.AllArgsConstructor;
@@ -83,10 +84,10 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
-    public StationDateResult getStationDataSum(String station, String year, String month) {
+    public MeteorologyResult getStationDataSum(String station, String year, String month) {
         List<Map<String, Object>>dataSum = stationDateMapper
-                .countByMonth(station + "_" + "weather" + "_" + year,
+                .countByMonth(station + "_" + "meteo_data",
                         year + "-" + month);
-        return !dataSum.isEmpty() ? StationDateResult.success(dataSum) : StationDateResult.fail();
+        return !dataSum.isEmpty() ? MeteorologyResult.success(station,0,dataSum) : MeteorologyResult.fail();
     }
 }

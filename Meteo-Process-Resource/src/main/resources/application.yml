@@ -13,7 +13,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/meteo_data?useSSL=false
     username: root
-    password: c209c209
+    password: 123456
+#    password: c209c209
+
 #    url: jdbc:mysql://organwalk.ink:33306/meteo_data?useSSL=false
 #    username: root
 #    password: c209c209
@@ -22,9 +24,18 @@ spring:
       database: 2
 #      host: organwalk.ink
 #      port: 36379
-      host: localhost
+      host: organwalk.ink
       port: 6379
-      password: c209c209
+      password: z2113653402
+      timeout: 5000
+      jedis:
+        pool:
+          max-idle: 6
+          max-active: 32
+          max-wait: 100
+          min-idle: 4
+
+#      password: c209c209
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

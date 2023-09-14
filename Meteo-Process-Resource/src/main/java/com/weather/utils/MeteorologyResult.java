@@ -8,12 +8,14 @@ import lombok.Data;
 public class MeteorologyResult {
     private int success;
     private String station;
+    private int total;
     private Object data;
 
-    public static MeteorologyResult success(String station, Object data){
+    public static MeteorologyResult success(String station, int total, Object data){
         return MeteorologyResult.builder()
                 .success(ResultCode.SUCCESS)
                 .station(station)
+                .total(total)
                 .data(data)
                 .build();
     }

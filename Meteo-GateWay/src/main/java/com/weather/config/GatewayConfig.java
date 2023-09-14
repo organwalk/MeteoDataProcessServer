@@ -19,6 +19,9 @@ public class GatewayConfig {
                 .route("meteo-process-resource",r -> r.path("/qx/**")
                         .filters(f -> f.filter(authenticationFilter))
                         .uri("lb://meteo-process-resource"))
+                .route("meteo-anapredict-resource", r -> r.path("/anapredict/**")
+                        .filters(f -> f.filter(authenticationFilter))
+                        .uri("http://localhost:9594"))
                 .build();
     }
 }

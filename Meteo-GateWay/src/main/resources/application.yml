@@ -15,6 +15,10 @@ spring:
           uri: lb://meteo-process-resource
           predicates:
             - Path=/qx/**
+        - id: meteo-anapredict-resource
+          uri: http://localhost:9594
+          predicates:
+            - Path=/anapredict/**
         - id: user-client-service
           uri: lb://user-client-service
           predicates:

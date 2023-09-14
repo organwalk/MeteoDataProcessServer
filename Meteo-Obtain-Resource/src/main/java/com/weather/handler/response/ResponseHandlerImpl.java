@@ -125,8 +125,8 @@ public class ResponseHandlerImpl implements ResponseHandler {
                             .toEpochSecond());
         }
         if (last == 1){
-            RedisScript<String> rdbSaveLua = new DefaultRedisScript<>(rdbLuaScript(), String.class);
-            redisTemplate.execute(rdbSaveLua, Collections.singletonList(key));
+//            RedisScript<String> rdbSaveLua = new DefaultRedisScript<>(rdbLuaScript(), String.class);
+//            redisTemplate.execute(rdbSaveLua, Collections.singletonList(key));
             saveMeteoToMySQL(station, date);
         }
     }

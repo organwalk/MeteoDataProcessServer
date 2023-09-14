@@ -37,4 +37,12 @@ public interface HourMeteorologyMapper {
                                             @Param("startDateTime") String startDateTime,
                                             @Param("endDateTime") String endDateTime,
                                             @Param("which") String which,@Param("pageSize") int pageSize, @Param("offset") int offset);
+    @Select("<script>" +
+            "SELECT COUNT(*) as total" +
+            " FROM ${datasource} WHERE DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:00') &gt;= '${startDateTime}' " +
+            "  AND DATE_FORMAT(dateTime, '%Y-%m-%d %H:%i:59') &lt;= '${endDateTime}'" +
+            "</script>")
+    int selectMeteorologyHourCount(@Param("datasource") String datasource,
+                                   @Param("startDateTime") String startDateTime,
+                                   @Param("endDateTime") String endDateTime);
 }
