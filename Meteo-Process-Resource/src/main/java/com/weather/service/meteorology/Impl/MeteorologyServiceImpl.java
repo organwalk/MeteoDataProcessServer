@@ -3,7 +3,6 @@ package com.weather.service.meteorology.Impl;
 import com.weather.entity.Meteorology;
 import com.weather.mapper.MySQL.meteorology.*;
 import com.weather.mapper.Redis.RedisRepository;
-import com.weather.obtainclient.ObtainClient;
 import com.weather.service.meteorology.MeteorologyService;
 import com.weather.utils.MeteorologyResult;
 import lombok.AllArgsConstructor;
@@ -12,6 +11,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * 气象数据查询业务实现
+ * by organwalk 2023-04-09
+ */
 @Service
 @AllArgsConstructor
 public class MeteorologyServiceImpl implements MeteorologyService {
@@ -21,28 +24,40 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     private final DateMeteorologyMapper dateMapper;
     private final ComplexMeteorologyMapper complexMapper;
     private final UtilsMapper utils;
-    private final ObtainClient obtainClient;
     private final RedisRepository cache;
 
+    /**
+     * 获取任一小时的分钟气象信息
+     * @param station
+     * @param date
+     * @param hour
+     * @param which
+     * @param pageSize
+     * @param offset
+     * @return 符合条件的数据列表
+     *
+     * by organwalk 2023-04-09
+     */
     @SneakyThrows
     @Override
-    public MeteorologyResult getMeteorologyByHour(String name, String station, String date, String hour, String which,int pageSize, int offset) {
+    public MeteorologyResult getMeteorologyByHour(String station, String date, String hour, String which,int pageSize, int offset) {
+        // 定义数据源
         String dataSource = station + "_meteo_data";
         String date_hour = date + " " + hour + ":00:00";
         String date_hour_end = date + " " + hour + ":59:59";
-//        if (utils.checkMeteoDataExist(dataSource, date) == null) {
-//            return obtainClient.getData(name, station, date, date) ?
-//                    getMeteorologyByHour(name, station, date, hour, which,pageSize,offset) : MeteorologyResult.fail();
-//        }
-//        obtainClient.getData(name, station, date, date);
-        List<List<String>> cacheHourMeteo = cache.getHourMeteoCache(dataSource,date_hour,which,pageSize,offset);
+        // 统计数据总量
         int total = hourMapper.selectMeteorologyHourCount(dataSource,date_hour,date_hour_end);
+        // 从缓存中获取符合条件的数据
+        List<List<String>> cacheHourMeteo = cache.getHourMeteoCache(dataSource,date_hour,which,pageSize,offset);
         if (!cacheHourMeteo.isEmpty()){
             return MeteorologyResult.success(station,total,cacheHourMeteo);
         }
+        // 如果缓存中没有符合条件的数据，则从数据库中查询
         List<Meteorology> meteorologyList = hourMapper
                 .selectMeteorologyHour(dataSource, date_hour, date_hour_end, which,pageSize,offset);
+        // 将查询的数据统一格式化
         List<List<String>> SQLResults = SQLResult(meteorologyList, "dateTime");
+        // 将数据存入缓存中并返回响应
         boolean cache_success = !SQLResults.isEmpty() && cache.saveHourMeteoCache(dataSource,date_hour,which,pageSize,offset,SQLResults);
         return cache_success ? MeteorologyResult.success(station, total, SQLResults) : MeteorologyResult.fail();
     }
@@ -53,10 +68,6 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         String dataSource = station + "_meteo_data";
         String start = date + " 00:00:00";
         String end = date + " 23:59:59";
-//        if (utils.checkMeteoDataExist(dataSource, date) == null) {
-//            return obtainClient.getData(name, station, date, date) ?
-//                    getMeteorologyByDay(name, station, date, which, type) : MeteorologyResult.fail();
-//        }
         List<List<String>> cacheDayMeteo = cache.getDayMeteoCache(dataSource, date, which, type);
         if (!cacheDayMeteo.isEmpty()){
             return MeteorologyResult.success(station,0,cacheDayMeteo);
@@ -69,13 +80,6 @@ public class MeteorologyServiceImpl implements MeteorologyService {
     @Override
     public MeteorologyResult getMeteorologyByDate(String name, String station, String startDate, String endDate, String which,int pageSize, int offset) {
         String dataSource = station + "_meteo_data";
-//        List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,startDate,endDate);
-//        if (!noExistDateRangeList.isEmpty()){
-//            for (List<String> noExistDateList : noExistDateRangeList){
-//                return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
-//                        getMeteorologyByDate(name, station, startDate, endDate, which,pageSize,offset) : MeteorologyResult.fail();
-//            }
-//        }
         List<List<String>> cacheDateRangeMeteo = cache.getDateRangeCache(dataSource,startDate,endDate,which,pageSize,offset);
         int total = dateMapper.selectMeteorologyDateCount(dataSource,startDate,endDate,which);
         if (!cacheDateRangeMeteo.isEmpty()){
@@ -116,17 +120,6 @@ public class MeteorologyServiceImpl implements MeteorologyService {
                 start_speed, end_speed, start_direction, end_direction,
                 start_rain, end_rain, start_sunlight, end_sunlight,
                 start_pm25, end_pm25, start_pm10, end_pm10);
-//        List <List<String>> noExistDateRangeList = getNoExistDateRangeList(dataSource,start_date,end_date);
-//        if (!noExistDateRangeList.isEmpty()){
-//            for (List<String> noExistDateList : noExistDateRangeList){
-//                return obtainClient.getData(name,station,noExistDateList.get(0),noExistDateList.get(1)) ?
-//                        getComplexMeteorology(name, station, start_date, end_date,
-//                                start_temperature, end_temperature, start_humidity, end_humidity,
-//                                start_speed, end_speed, start_direction, end_direction,
-//                                start_rain, end_rain, start_sunlight, end_sunlight,
-//                                start_pm25, end_pm25, start_pm10, end_pm10,pageSize,offset) : MeteorologyResult.fail();
-//            }
-//        }
         List<Meteorology> meteorologyList = complexMapper
                 .selectMeteorologyComplex(dataSource,station,start, end,
                         start_temperature, end_temperature, start_humidity, end_humidity,

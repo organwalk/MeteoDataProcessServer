@@ -8,11 +8,23 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * 路由网关配置
+ * by organwalk 2023-04-02
+ */
 @Configuration
 @EnableDiscoveryClient
 @AllArgsConstructor
 public class GatewayConfig {
     private final AuthenticationFilter authenticationFilter;
+
+    /**
+     * 针对处理服务和分析预测服务使用认证过滤器
+     * @param builder
+     * @return
+     *
+     * by organwalk 2023-04-02
+     */
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder){
         return builder.routes()

@@ -9,5 +9,5 @@ public interface UserService {
     LoginRespond authUser(LoginRequest loginRequest);
     Result insertUser(RegisterRequest registerRequest);
     Result logout(String username);
-    String checkAccessToken(String username);
+    String getAccessToken(String username);
 }

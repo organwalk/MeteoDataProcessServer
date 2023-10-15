@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * 此处提供了内部Http端点供服务调用
- * * 服务调用使用了SpringBoot3内置的Http客户端，即WebFlux
+ * 服务调用使用了SpringBoot3内置的Http客户端，即WebFlux
  * by organwalk 2023.05.28
  **/
 

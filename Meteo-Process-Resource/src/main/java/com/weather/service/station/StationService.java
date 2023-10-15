@@ -5,8 +5,8 @@ import com.weather.utils.StationDateResult;
 import com.weather.utils.StationResult;
 
 public interface StationService {
-    StationResult getStationInfo(String authorization);
-    StationDateResult getStationDateByStationId(String station, String authorization);
+    StationResult getStationInfo();
+    StationDateResult getStationDateByStationId(String station);
     StationDateResult getCollectionYear(String station);
     StationDateResult getCollectionMonth(String station,String year);
     StationDateResult getCollectionDay(String station,String year,String month);

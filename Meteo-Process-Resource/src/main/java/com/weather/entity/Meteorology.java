@@ -2,7 +2,10 @@ package com.weather.entity;
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 
-
+/**
+ * 气象数据表实体
+ * by organwalk 2023-04-02
+ */
 public class Meteorology extends Model<Meteorology> {
 
     private Integer id;
