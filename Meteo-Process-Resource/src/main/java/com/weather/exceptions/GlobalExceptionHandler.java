@@ -68,14 +68,6 @@ public class GlobalExceptionHandler {
         private Integer success;
         private Object data;
 
-        // 成功响应
-        public static Respond success(Object data){
-            return Respond.builder()
-                    .success(ResultCode.SUCCESS)
-                    .data(data)
-                    .build();
-        }
-
         // 失败响应
         public static Respond fail(Object data){
             return Respond.builder()

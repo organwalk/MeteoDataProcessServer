@@ -40,14 +40,26 @@ public class MeteorologyController {
                                                       @Digits(integer = Integer.MAX_VALUE, fraction = 0) int offset){
         return meteorologyService.getMeteorologyByHour(station,date,hour,which,pageSize,offset);
     }
+
+    // 获取任一天的小时气象数据
     @PostMapping("/stat_day")
-    public MeteorologyResult getMeteorologyByDay(@RequestParam String station,
-                                                  @RequestParam String date,
-                                                  @RequestParam String which,
-                                                 @RequestParam String type,
-                                                 @RequestHeader(name = "name") String authorization){
-        return meteorologyService.getMeteorologyByDay(authorization,station,date,which,type);
+    public MeteorologyResult getMeteorologyByDay(@RequestParam @NotBlank(message = "station不能为空") String station,
+                                                  @RequestParam @Pattern(
+                                                          regexp = "\\d{4}-\\d{2}-\\d{2}",
+                                                          message = "date字段必须是yyyy-mm-dd格式数据"
+                                                  ) String date,
+                                                  @RequestParam @Pattern(
+                                                          regexp = "^(?:[1-8],?)+$",
+                                                          message = "which字段必须是1-8范围内的可选要素"
+                                                  ) String which,
+                                                 @RequestParam @Pattern(
+                                                         regexp = "^([12])$",
+                                                         message = "type字段必须是1或2"
+                                                  ) String type){
+        return meteorologyService.getMeteorologyByDay(station,date,which,type);
     }
+
+    // 获取任意时间段以天为单位的气象数据
     @PostMapping("/stat_day_range")
     public MeteorologyResult getMeteorologyByDayRange(@RequestParam String station,
                                                  @RequestParam String start_date,

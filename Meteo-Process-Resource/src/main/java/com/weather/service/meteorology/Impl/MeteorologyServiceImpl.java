@@ -62,17 +62,29 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         return cache_success ? MeteorologyResult.success(station, total, SQLResults) : MeteorologyResult.fail();
     }
 
-
+    /**
+     * 获取任一天的小时气象数据
+     * @param station
+     * @param date
+     * @param which
+     * @param type 1:表示获取任一天的小时气象信息,，包含时间，2:同等数据，只是缺少了时间值，方便进行数据可视化处理
+     * @return 符合条件的数据列表
+     *
+     * by organwalk 2023-04-09
+     */
     @Override
-    public MeteorologyResult getMeteorologyByDay(String name, String station, String date, String which, String type) {
+    public MeteorologyResult getMeteorologyByDay(String station, String date, String which, String type) {
         String dataSource = station + "_meteo_data";
         String start = date + " 00:00:00";
         String end = date + " 23:59:59";
+        // 从缓存中获取符合条件的数据
         List<List<String>> cacheDayMeteo = cache.getDayMeteoCache(dataSource, date, which, type);
         if (!cacheDayMeteo.isEmpty()){
             return MeteorologyResult.success(station,0,cacheDayMeteo);
         }
+        // 如果缓存中没有符合条件的数据，则从数据库中查询
         List<List<String>> SQLResults = getDayMeteoSQLResult(dataSource, start, end, which, type);
+        // 将数据存入缓存中并返回响应
         boolean cache_success = !SQLResults.isEmpty() && cache.saveDayMeteoCache(dataSource, date, which, type, SQLResults);
         return cache_success ? MeteorologyResult.success(station, 0,SQLResults) : MeteorologyResult.fail();
     }
