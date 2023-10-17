@@ -89,23 +89,63 @@ public class MeteorologyServiceImpl implements MeteorologyService {
         return cache_success ? MeteorologyResult.success(station, 0,SQLResults) : MeteorologyResult.fail();
     }
 
+    /**
+     * 获取任意时间段以天为单位的气象数据
+     * @param station
+     * @param startDate
+     * @param endDate
+     * @param which
+     * @param pageSize
+     * @param offset
+     * @return
+     *
+     * by organwalk 2023-04-10
+     */
     @Override
-    public MeteorologyResult getMeteorologyByDate(String name, String station, String startDate, String endDate, String which,int pageSize, int offset) {
+    public MeteorologyResult getMeteorologyByDate(String station, String startDate, String endDate, String which,int pageSize, int offset) {
         String dataSource = station + "_meteo_data";
-        List<List<String>> cacheDateRangeMeteo = cache.getDateRangeCache(dataSource,startDate,endDate,which,pageSize,offset);
         int total = dateMapper.selectMeteorologyDateCount(dataSource,startDate,endDate,which);
+        // 从缓存中获取符合条件的数据
+        List<List<String>> cacheDateRangeMeteo = cache.getDateRangeCache(dataSource,startDate,endDate,which,pageSize,offset);
         if (!cacheDateRangeMeteo.isEmpty()){
             return MeteorologyResult.success(station,total,cacheDateRangeMeteo);
         }
-
+        // 如果缓存中没有符合条件的数据，则从数据库中查询
         List<List<String>> SQLResults = getDateRangeSQLResult(dataSource, startDate, endDate, which,pageSize,offset);
+        // 将数据存入缓存中并返回响应
         boolean cache_success = !SQLResults.isEmpty() && cache.saveDateRangeCache(dataSource, startDate, endDate, which,pageSize,offset,SQLResults);
         return cache_success ? MeteorologyResult.success(station, total,SQLResults) : MeteorologyResult.fail();
     }
 
+    /**
+     * 获取指定复杂查询条件的气象数据
+     * @param station
+     * @param start_date
+     * @param end_date
+     * @param start_temperature
+     * @param end_temperature
+     * @param start_humidity
+     * @param end_humidity
+     * @param start_speed
+     * @param end_speed
+     * @param start_direction
+     * @param end_direction
+     * @param start_rain
+     * @param end_rain
+     * @param start_sunlight
+     * @param end_sunlight
+     * @param start_pm25
+     * @param end_pm25
+     * @param start_pm10
+     * @param end_pm10
+     * @param pageSize
+     * @param offset
+     * @return
+     *
+     * by organwalk 2023-04-10
+     */
     @Override
-    public MeteorologyResult getComplexMeteorology(String name,
-                                                   String station,
+    public MeteorologyResult getComplexMeteorology(String station,
                                                    String start_date,
                                                    String end_date,
                                                    String start_temperature,

@@ -1,8 +1,6 @@
 package com.weather.exceptions;
 
-import com.weather.utils.Result;
 import com.weather.utils.ResultCode;
-import com.weather.utils.StationDateResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

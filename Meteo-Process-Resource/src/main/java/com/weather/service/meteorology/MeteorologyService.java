@@ -6,9 +6,8 @@ public interface MeteorologyService {
 
     MeteorologyResult getMeteorologyByHour(String station,String date,String hour,String which,int pageSize, int offset);
     MeteorologyResult getMeteorologyByDay(String station,String date,String which,String type);
-    MeteorologyResult getMeteorologyByDate(String name,String station,String start_date,String end_date,String which,int pageSize, int offset);
-    MeteorologyResult getComplexMeteorology(String name,
-                                            String station,
+    MeteorologyResult getMeteorologyByDate(String station,String start_date,String end_date,String which,int pageSize, int offset);
+    MeteorologyResult getComplexMeteorology(String station,
                                             String start_date,
                                             String end_date,
                                             String start_temperature,

@@ -61,19 +61,38 @@ public class MeteorologyController {
 
     // 获取任意时间段以天为单位的气象数据
     @PostMapping("/stat_day_range")
-    public MeteorologyResult getMeteorologyByDayRange(@RequestParam String station,
-                                                 @RequestParam String start_date,
-                                                 @RequestParam String end_date,
-                                                 @RequestParam String which,
-                                                 @RequestParam int pageSize,
-                                                 @RequestParam int offset,
-                                                 @RequestHeader(name = "name") String authorization){
-        return meteorologyService.getMeteorologyByDate(authorization,station,start_date,end_date,which,pageSize,offset);
+    public MeteorologyResult getMeteorologyByDayRange(@RequestParam @NotBlank(message = "station不能为空") String station,
+                                                      @RequestParam @Pattern(
+                                                              regexp = "\\d{4}-\\d{2}-\\d{2}",
+                                                              message = "start_date字段必须是yyyy-mm-dd格式数据"
+                                                      ) String start_date,
+                                                      @RequestParam @Pattern(
+                                                              regexp = "\\d{4}-\\d{2}-\\d{2}",
+                                                              message = "end_date字段必须是yyyy-mm-dd格式数据"
+                                                      ) String end_date,
+                                                      @RequestParam @Pattern(
+                                                              regexp = "^(?:[1-8],?)+$",
+                                                              message = "which字段必须是1-8范围内的可选要素"
+                                                      ) String which,
+                                                      @RequestParam @Min(value = 1, message = "pageSize必须为大于1的整数")
+                                                          @Digits(integer = Integer.MAX_VALUE, fraction = 0)
+                                                          int pageSize,
+                                                      @RequestParam @Min(value = 0, message = "offset必须为大于或等于0的整数")
+                                                          @Digits(integer = Integer.MAX_VALUE, fraction = 0) int offset){
+        return meteorologyService.getMeteorologyByDate(station,start_date,end_date,which,pageSize,offset);
     }
+
+    // 获取指定复杂查询条件的气象数据
     @PostMapping("/query")
-    public MeteorologyResult getComplexMeteorology(@RequestParam String station,
-                                                   @RequestParam String start_date,
-                                                   @RequestParam String end_date,
+    public MeteorologyResult getComplexMeteorology(@RequestParam @NotBlank(message = "station不能为空") String station,
+                                                   @RequestParam @Pattern(
+                                                           regexp = "\\d{4}-\\d{2}-\\d{2}",
+                                                           message = "start_date字段必须是yyyy-mm-dd格式数据"
+                                                   ) String start_date,
+                                                   @RequestParam @Pattern(
+                                                           regexp = "\\d{4}-\\d{2}-\\d{2}",
+                                                           message = "end_date字段必须是yyyy-mm-dd格式数据"
+                                                   ) String end_date,
                                                    @RequestParam(required = false) String start_temperature,
                                                    @RequestParam(required = false) String end_temperature,
                                                    @RequestParam(required = false) String start_humidity,
@@ -90,11 +109,12 @@ public class MeteorologyController {
                                                    @RequestParam(required = false) String end_pm25,
                                                    @RequestParam(required = false) String start_pm10,
                                                    @RequestParam(required = false) String end_pm10,
-                                                   @RequestParam int pageSize,
-                                                   @RequestParam int offset,
-                                                   @RequestHeader(name = "name") String authorization){
-        return meteorologyService.getComplexMeteorology(authorization,
-                                                        station,
+                                                   @RequestParam @Min(value = 1, message = "pageSize必须为大于1的整数")
+                                                       @Digits(integer = Integer.MAX_VALUE, fraction = 0)
+                                                       int pageSize,
+                                                   @RequestParam @Min(value = 0, message = "offset必须为大于或等于0的整数")
+                                                       @Digits(integer = Integer.MAX_VALUE, fraction = 0) int offset){
+        return meteorologyService.getComplexMeteorology(station,
                                                         start_date,
                                                         end_date,
                                                         start_temperature,
