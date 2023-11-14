@@ -6,9 +6,9 @@ import lombok.Data;
 public class GetStationDateRange {
     int code;
     String token;
-    String station;
+    Integer station;
 
-    public GetStationDateRange(int code, String token, String station) {
+    public GetStationDateRange(int code, String token, Integer station) {
         this.code = code;
         this.token = token;
         this.station = station;

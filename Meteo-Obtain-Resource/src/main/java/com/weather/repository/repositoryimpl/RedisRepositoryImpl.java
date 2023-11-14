@@ -14,6 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class RedisRepositoryImpl implements RedisRepository {
     private final RedisTemplate<String ,String> redisTemplate;
+
     @Override
     public String getToken(String username) {
         return (String) redisTemplate.opsForHash().get("tokens",username);

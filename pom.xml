@@ -73,6 +73,11 @@
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>1.2.6</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>2.20.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

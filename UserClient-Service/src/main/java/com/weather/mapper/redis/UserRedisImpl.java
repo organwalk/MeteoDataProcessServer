@@ -16,8 +16,8 @@ public class UserRedisImpl implements UserRedis{
 
     /**
      * 执行保存Token的操作
-     * @param username
-     * @param token
+     * @param username 用户名
+     * @param token 通行令牌
      *
      * by organwalk 2023-04-02
      */
@@ -28,7 +28,7 @@ public class UserRedisImpl implements UserRedis{
 
     /**
      * 执行废弃Token的操作
-     * @param username
+     * @param username 用户名
      *
      * by organwalk 2023-04-02
      */
@@ -39,7 +39,7 @@ public class UserRedisImpl implements UserRedis{
 
     /**
      * 获取用户登录状态
-     * @param username
+     * @param username 用户名
      * @return 用户登录状态
      *
      * by organwalk 2023-04-02
@@ -51,7 +51,7 @@ public class UserRedisImpl implements UserRedis{
 
     /**
      * 获取令牌内容
-     * @param username
+     * @param username 用户名
      * @return Token内容
      *
      * by organwalk 2023-04-02

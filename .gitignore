@@ -3,6 +3,7 @@ logs/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+resource/application.yml
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

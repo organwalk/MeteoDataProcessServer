@@ -1,16 +1,22 @@
 package com.weather.handler.response;
 
+import com.weather.callback.DateRangeCallback;
+import com.weather.callback.MeteoDataCallback;
+import com.weather.callback.SaveTokenCallback;
+import com.weather.callback.StationCodeCallback;
+import com.weather.controller.ObtainController;
 import com.weather.entity.table.MeteoData;
 import com.weather.mapper.SaveToMySQLMapper;
 import com.weather.repository.RedisRepository;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.HashOperations;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 import java.sql.Time;
@@ -20,65 +26,117 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
-@Slf4j
-@AllArgsConstructor
 public class ResponseHandlerImpl implements ResponseHandler {
-    private final RedisTemplate<String, String> redisTemplate;
-    private final SaveToMySQLMapper mapper;
-    private final RedisRepository repository;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private SaveToMySQLMapper mapper;
+    @Autowired
+    private  RedisRepository repository;
+    private boolean tokenSaved = false;
+    private boolean stationCodeSaved = false;
+    private boolean dateRangeSaved = false;
+    private boolean meteoDataSaved = false;
+    private static final Logger logger = LogManager.getLogger(ResponseHandlerImpl.class);
+
+    private SaveTokenCallback saveTokenCallback;
+    public void setSaveTokenCallback(SaveTokenCallback saveTokenCallback) {
+        this.saveTokenCallback = saveTokenCallback;
+    }
+
+    private StationCodeCallback stationCodeCallback;
+
+    public void setStationCodeCallback(StationCodeCallback callback) {
+        this.stationCodeCallback = callback;
+    }
+
+    private DateRangeCallback dateRangeCallback;
+    public void setDateRangeCallback(DateRangeCallback dateRangeCallback) {
+        this.dateRangeCallback = dateRangeCallback;
+    }
+
+    private MeteoDataCallback meteoDataCallback;
+    public void setMeteoDataCallback(MeteoDataCallback meteoDataCallback) {
+        this.meteoDataCallback = meteoDataCallback;
+    }
+
 
     @SneakyThrows
     @Override
     public void saveToken(String username, String token) {
-        String key = "tokens";
-        redisTemplate.opsForHash().put(key, username, token);
-        String savedToken = (String) redisTemplate.opsForHash().get(key, username);
-        log.info("Token saved to Redis: " + savedToken);
+        redisTemplate.opsForHash().put("tokens", username, token);
+        String savedToken = (String) redisTemplate.opsForHash().get("tokens", username);
+        tokenSaved = true; // 令牌保存成功
+        logger.info("Token saved to Redis: " + savedToken);
+        // 调用回调方法通知操作完成
+        if (saveTokenCallback != null) {
+            saveTokenCallback.onTokenSaved(tokenSaved);
+        }
+
+    }
+
+    @Override
+    public boolean isTokenSaved() {
+        return tokenSaved;
     }
 
     @Override
     public void deleteToken(String token) {
         String key = "token:" + token;
         redisTemplate.delete(key);
-        log.info("The token '" + token + "' stored in Redis has been deleted");
+        logger.info("The token '" + token + "' stored in Redis has been deleted");
     }
 
+    /**
+     * 保存气象站点至数据库中
+     * @param data 数据存储服务器的响应字符串
+     */
     @SneakyThrows
     @Override
     public void saveAllStationCode(String data) {
-        List<String> dataList = new ArrayList<>();
-        int startPos = data.indexOf("[{");
-        int endPos = data.lastIndexOf("}]");
-        if (startPos >= 0 && endPos >= 0) {
-            String[] stationData = data.substring(startPos + 2, endPos).split("\\},\\{");
-            for (String station : stationData) {
-                Map<String, String> stationMap = new HashMap<>();
-                String[] keyValuePairs = station.split(",");
-                for (String pair : keyValuePairs) {
-                    String[] parts = pair.split(":");
-                    if (parts.length == 2) {
-                        String key = parts[0].replaceAll("\"", "").trim();
-                        String value = parts[1].replaceAll("\"", "").trim();
-                        stationMap.put(key, value);
-                    }
-                }
-                dataList.add(stationMap.get("station") + "," + stationMap.get("name"));
-            }
+        logger.info("开始将气象站点数据保存至数据库中");
+        extractData(data).forEach(dataItem -> {
+            mapper.insertStation(dataItem.station, dataItem.name);
+        });
+        stationCodeSaved = true; // 气象站编号保存成功
+        logger.info("The stationCode has been successfully saved to database");
+        // 调用回调方法通知操作完成
+        if (stationCodeCallback != null) {
+            stationCodeCallback.onStationCodeSaved(stationCodeSaved);
         }
-        HashOperations<String, String, String> ops = redisTemplate.opsForHash();
-        for (int i = 0; i < dataList.size(); i++) {
-            String stationData = dataList.get(i);
-            String[] parts = stationData.split(",");
-            if (parts.length == 2) {
-                String stationKey = parts[0];
-                String stationName = parts[1];
-                ops.put("allStationCode:station&name", stationKey, stationName);
-                mapper.insertStation(stationKey, stationName);
-            }
+    }
+
+    @Override
+    public boolean isStationCodeSave() {
+        return stationCodeSaved;
+    }
+
+    /**
+     * 将气象站点相关响应字符串处理并返回一个包含气象站编号和名称的列表
+     * @param input 字符串
+     * @return 包含气象站点和编号的对象列表
+     */
+    private static List<DataItem> extractData(String input) {
+        List<DataItem> extractedData = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\"station\":\\s*\"(.*?)\",\\s*\"name\":\\s*\"(.*?)\"");
+        Matcher matcher = pattern.matcher(input);
+        while (matcher.find()) {
+            String station = matcher.group(1);
+            String name = matcher.group(2);
+            extractedData.add(new DataItem(station, name));
         }
-        log.info("The stationCode has been successfully saved to Redis");
+        return extractedData;
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class DataItem {
+        private String station;
+        private String name;
     }
 
     @SneakyThrows
@@ -95,7 +153,17 @@ public class ResponseHandlerImpl implements ResponseHandler {
             redisTemplate.opsForSet().add(d_station + ":dateRange", date);
             mapper.insertStationDateRange(date, d_station);
         }
-        log.info("The MeteoDateRange has been successfully saved to Redis");
+        logger.info("The MeteoDateRange has been successfully saved to Redis");
+        // 调用回调方法通知操作完成
+        dateRangeSaved = true;
+        if (dateRangeCallback != null) {
+            dateRangeCallback.onDateRangeSaved(dateRangeSaved);
+        }
+    }
+
+    @Override
+    public boolean isDateRangeSave() {
+        return dateRangeSaved;
     }
 
 
@@ -113,6 +181,7 @@ public class ResponseHandlerImpl implements ResponseHandler {
                 dataList.add(Arrays.asList(values));
             }
         }
+        logger.info("[进行]--正在将响应气象数据保存至缓存中");
         ZSetOperations<String, String> ops = redisTemplate.opsForZSet();
         String key = station + "_data_" + date.replace("\"", "");
         for (int i = 0; i < dataList.size(); i++) {
@@ -124,12 +193,24 @@ public class ResponseHandlerImpl implements ResponseHandler {
                                     , ZoneId.of("Asia/Shanghai"))
                             .toEpochSecond());
         }
+        logger.info("[完成]--已成功将响应气象数据保存至缓存中");
         if (last == 1){
-//            RedisScript<String> rdbSaveLua = new DefaultRedisScript<>(rdbLuaScript(), String.class);
-//            redisTemplate.execute(rdbSaveLua, Collections.singletonList(key));
+            logger.info("[进行]--正在将响应气象数据保存至数据库中");
             saveMeteoToMySQL(station, date);
+            // 调用回调方法通知操作完成
+            meteoDataSaved = true;
+            logger.info("[完成]--已成功将响应气象数据保存至数据库中");
+            if (meteoDataCallback != null) {
+                meteoDataCallback.onMeteoDataSaved(meteoDataSaved);
+            }
         }
     }
+
+    @Override
+    public boolean isMeteoDataSave() {
+        return meteoDataSaved;
+    }
+
 
     @SneakyThrows
     public void saveMeteoToMySQL(String station, String date) {
@@ -154,19 +235,5 @@ public class ResponseHandlerImpl implements ResponseHandler {
             ));
         }
         mapper.insertMeteoData(String.format(station + "_meteo_data"), meteoList);
-    }
-
-    public String rdbLuaScript(){
-        return "local keys = redis.call(\"KEYS\", \"*\")\n" +
-                "local use_key = ARGV[1]\n" +
-                "for i, key in ipairs(keys) do\n" +
-                "    redis.call(\"SELECT\", 1)\n" +
-                "    if redis.call(\"EXISTS\", key) == use_key then\n" +
-                "        redis.call(\"SAVE\")\n" +
-                "        local old_filename = \"/meteo/redis/data/dump.rdb\"\n" +
-                "        local new_filename = \"/meteo/redis/data/share/\" .. use_key .. \".rdb\"\n" +
-                "        os.rename(old_filename, new_filename)\n" +
-                "    end\n" +
-                "end";
     }
 }
