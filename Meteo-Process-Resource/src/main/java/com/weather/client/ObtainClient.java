@@ -5,6 +5,8 @@ import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
+import java.util.concurrent.CompletableFuture;
+
 @HttpExchange("http://localhost:9494/api/obtain")
 public interface ObtainClient {
     @GetExchange("/token/user")
@@ -18,7 +20,7 @@ public interface ObtainClient {
                          @RequestParam(name = "station") String station);
 
     @GetExchange("/meteo/data")
-    boolean getMeteoData(@RequestParam String name,
+    CompletableFuture<Boolean> getMeteoData(@RequestParam String name,
                          @RequestParam String station,
                          @RequestParam String start,
                          @RequestParam String end);

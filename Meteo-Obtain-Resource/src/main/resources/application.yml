@@ -1,8 +1,9 @@
 server:
   port: 9494
 udp:
+  # 气象数据存储服务器
   remote:
-    host: 192.168.89.78
+    host: 192.168.112.78
     port: 9092
 spring:
   application:

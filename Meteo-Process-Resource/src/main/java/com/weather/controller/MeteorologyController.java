@@ -8,15 +8,16 @@ import com.weather.utils.MeteorologyResult;
 import com.weather.utils.ObtainResult;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 气象数据查询接口
@@ -210,11 +211,14 @@ public class MeteorologyController {
     }
 
     // 同步气象数据
-    @GetMapping("/obtain/sync/meteo_data")
+    @SneakyThrows
+    @PostMapping("/obtain/sync/meteo_data")
     public ObtainResult syncMeteoData(@RequestHeader(name = "name") String name,
                                       @RequestBody MeteoSyncReq req){
-        return obtainClient.getMeteoData(name, req.getStation(), req.getStart(), req.getEnd())
-                ? ObtainResult.success("已成功同步" + req.getStart() + "气象数据")
+        logger.info("用户请求同步气象站数据");
+        CompletableFuture<Boolean> future = obtainClient.getMeteoData(name, req.getStation(), req.getStart(), req.getEnd());
+        boolean res = future.get();
+        return res ? ObtainResult.success("已成功同步" + req.getStart() + "气象数据")
                 : ObtainResult.fail("未能成功同步" + req.getStart() + "气象数据");
     }
 

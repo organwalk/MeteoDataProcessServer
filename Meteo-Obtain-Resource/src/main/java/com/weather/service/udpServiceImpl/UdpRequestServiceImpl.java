@@ -68,7 +68,7 @@ public class UdpRequestServiceImpl implements UdpRequestService {
     @SneakyThrows
     public boolean getMeteoData(String name, String station, String start, String end) {
         String getMeteoDataRequest = new ObjectMapper()
-                .writeValueAsString(new GetMeteoData(9,repository.getToken(name),station,start,end));
+                .writeValueAsString(new GetMeteoData(9,repository.getToken(name),Integer.valueOf(station),start,end));
         logger.info(getMeteoDataRequest);
         udpClient.send(getMeteoDataRequest);
         return true;

@@ -36,7 +36,7 @@ public class UDPClient {
         this.udpClientHandler = udpClientHandler;
         this.channel = bootstrap.group(eventLoopGroup)
                 .channel(NioDatagramChannel.class)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(65535))
+                .option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(655350))
                 .handler(new ChannelInitializer<DatagramChannel>() {
                     @Override
                     protected void initChannel(DatagramChannel ch) {

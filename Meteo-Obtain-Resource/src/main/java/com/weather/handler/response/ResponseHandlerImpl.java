@@ -4,7 +4,6 @@ import com.weather.callback.DateRangeCallback;
 import com.weather.callback.MeteoDataCallback;
 import com.weather.callback.SaveTokenCallback;
 import com.weather.callback.StationCodeCallback;
-import com.weather.controller.ObtainController;
 import com.weather.entity.table.MeteoData;
 import com.weather.mapper.SaveToMySQLMapper;
 import com.weather.repository.RedisRepository;
@@ -14,7 +13,6 @@ import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
@@ -40,7 +38,6 @@ public class ResponseHandlerImpl implements ResponseHandler {
     private boolean tokenSaved = false;
     private boolean stationCodeSaved = false;
     private boolean dateRangeSaved = false;
-    private boolean meteoDataSaved = false;
     private static final Logger logger = LogManager.getLogger(ResponseHandlerImpl.class);
 
     private SaveTokenCallback saveTokenCallback;
@@ -57,11 +54,6 @@ public class ResponseHandlerImpl implements ResponseHandler {
     private DateRangeCallback dateRangeCallback;
     public void setDateRangeCallback(DateRangeCallback dateRangeCallback) {
         this.dateRangeCallback = dateRangeCallback;
-    }
-
-    private MeteoDataCallback meteoDataCallback;
-    public void setMeteoDataCallback(MeteoDataCallback meteoDataCallback) {
-        this.meteoDataCallback = meteoDataCallback;
     }
 
 
@@ -184,11 +176,11 @@ public class ResponseHandlerImpl implements ResponseHandler {
         logger.info("[进行]--正在将响应气象数据保存至缓存中");
         ZSetOperations<String, String> ops = redisTemplate.opsForZSet();
         String key = station + "_data_" + date.replace("\"", "");
-        for (int i = 0; i < dataList.size(); i++) {
-            ops.add(key, dataList.get(i).toString(),
+        for (List<String> strings : dataList) {
+            ops.add(key, strings.toString(),
                     ZonedDateTime.of(
                                     LocalDateTime
-                                            .parse(date.substring(1, 11) + " " + dataList.get(i).get(0).substring(1, 9),
+                                            .parse(date.substring(1, 11) + " " + strings.get(0).substring(1, 9),
                                                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                                     , ZoneId.of("Asia/Shanghai"))
                             .toEpochSecond());
@@ -197,18 +189,8 @@ public class ResponseHandlerImpl implements ResponseHandler {
         if (last == 1){
             logger.info("[进行]--正在将响应气象数据保存至数据库中");
             saveMeteoToMySQL(station, date);
-            // 调用回调方法通知操作完成
-            meteoDataSaved = true;
             logger.info("[完成]--已成功将响应气象数据保存至数据库中");
-            if (meteoDataCallback != null) {
-                meteoDataCallback.onMeteoDataSaved(meteoDataSaved);
-            }
         }
-    }
-
-    @Override
-    public boolean isMeteoDataSave() {
-        return meteoDataSaved;
     }
 
 

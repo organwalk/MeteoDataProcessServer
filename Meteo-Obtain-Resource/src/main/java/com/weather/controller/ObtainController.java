@@ -3,6 +3,7 @@ package com.weather.controller;
 import com.weather.handler.response.ResponseHandler;
 import com.weather.mapper.SaveToMySQLMapper;
 import com.weather.service.UdpRequestService;
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,17 +104,14 @@ public class ObtainController {
         logger.info("[完成]--接收到同步气象数据的请求");
         udpRequestService.getMeteoData(name, station, start, end);
 
-        CountDownLatch latch = new CountDownLatch(1);
-        logger.info("[等待]--正在同步气象数据");
-        response.setMeteoDataCallback(isSaved -> {
-            logger.info("[完成]--成功同步气象数据");
-            latch.countDown();
-        });
-        try {
-            latch.await(); // 等待计数器归零，即等待异步操作完成
-        } catch (InterruptedException e) {
-            return false;
+        return nowGetMeteoData(station+"_meteo_data",start);
+    }
+
+    @SneakyThrows
+    public Boolean nowGetMeteoData(String table, String date){
+        while (mapper.checkMeteoDataExist(table,date) == null){
+            Thread.sleep(3000);
         }
-        return response.isMeteoDataSave();
+        return true;
     }
 }
